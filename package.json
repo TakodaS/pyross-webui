@@ -1,0 +1,28 @@
+{
+  "name": "pyross-webui",
+  "version": "1.0.0",
+  "description": "Visualisation for pyross COVID-19 forecasts.",
+  "main": "index.js",
+  "repository": "git@github.com:TakodaS/pyross-webui.git",
+  "author": "ab2075@xpluto <ab2075@cam.ac.uk>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "nodemon": "^2.0.4",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
+  },
+  "scripts": {
+    "start": "parcel serve src/index.html",
+    "build": "cross-env NODE_ENV=production parcel build src/index.html --public-url .",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@amcharts/amcharts4": "^4.9.26",
+    "@amcharts/amcharts4-fonts": "^4.0.1",
+    "@amcharts/amcharts4-geodata": "^4.1.15",
+    "cross-env": "^7.0.2",
+    "gh-pages": "^3.0.0",
+    "parcel-bundler": "^1.12.4"
+  }
+}
