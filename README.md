@@ -12,3 +12,9 @@ yarn install
 yarn start
 ```
 
+## Build and push to production branch
+
+```bash
+yarn build
+yarn deploy
+```
