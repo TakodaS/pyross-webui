@@ -5,6 +5,7 @@ import * as am4charts from "@amcharts/amcharts4/charts";
 import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
+import {data} from './data/testingData.json';
 
 export function makeChart(label: string){
 	// Themes begin
@@ -16,6 +17,9 @@ export function makeChart(label: string){
 	  container.width = am4core.percent(100);
   container.height = am4core.percent(100);
 	let  mapChart= container.createChild(am4maps.MapChart);
+
+// zoomout on background click (seems broken)
+	//mapChart.chartContainer.background.events.on("hit", function () { zoomOut() });
 	mapChart.height = am4core.percent(100);
 		mapChart.zoomControl = new am4maps.ZoomControl();
 	  mapChart.zoomControl.align = "middle";
@@ -23,7 +27,7 @@ export function makeChart(label: string){
 	  mapChart.zoomControl.valign = "middle";
 	// Set map definition
 	 mapChart.geodata = am4geodata_ukCountiesHigh;
-
+console.log(mapChart.geodata)
 	// Set projection
 	 mapChart.projection = new am4maps.projections.Miller();
 
@@ -52,27 +56,38 @@ export function makeChart(label: string){
 
 	// Create an event to toggle "active" state
 	polygonTemplate.events.on("hit", function(ev) {
-	  ev.target.isActive = !ev.target.isActive;
+		ev.target.isActive = !ev.target.isActive;
+		console.log(ev.target)
+		console.log(polygonSeries)
+		console.log(ev.target.getPropertyValue("id"))
+		randomValues() //right now random values are plotten
 	})
 
 
 	let buttonsAndChartContainer = container.createChild(am4core.Container);
 	buttonsAndChartContainer.layout = "vertical";
-	buttonsAndChartContainer.height = am4core.percent(45); // make this bigger if you want more space for the  mapChart
-	buttonsAndChartContainer.width = am4core.percent(50);
+	var bccWidth = 30;
+	buttonsAndChartContainer.height = am4core.percent(100); // make this bigger if you want more space for the  mapChart
+	buttonsAndChartContainer.width = am4core.percent(bccWidth);
 	buttonsAndChartContainer.valign = "bottom";
+	buttonsAndChartContainer.x = am4core.percent(100-bccWidth);
+buttonsAndChartContainer.verticalCenter = "top";
 	// Chart & slider container
 	let  mapChartAndSliderContainer = buttonsAndChartContainer.createChild(am4core.Container);
 	 mapChartAndSliderContainer.layout = "vertical";
-	 mapChartAndSliderContainer.height = am4core.percent(100);
+	 mapChartAndSliderContainer.height = am4core.percent(25);
 	 mapChartAndSliderContainer.width = am4core.percent(100);
 	 mapChartAndSliderContainer.background = new am4core.RoundedRectangle();
-	 mapChartAndSliderContainer.background.fill = am4core.color("#000000");
-	 mapChartAndSliderContainer.background.cornerRadius(30, 30, 0, 0)
-	 mapChartAndSliderContainer.background.fillOpacity = 0.25;
+	//mapChartAndSliderContainer.background.fill = am4core.color("#000000");
+	 mapChartAndSliderContainer.background.cornerRadius(30, 0, 30, 30)
+	 mapChartAndSliderContainer.background.fillOpacity = 0.1;
 	 mapChartAndSliderContainer.paddingTop = 12;
 	 mapChartAndSliderContainer.paddingBottom = 0;
 	let lineChart =  mapChartAndSliderContainer.createChild(am4charts.XYChart);
+	//lineChart.height = am4core.percent(25);
+	lineChart.responsive.enabled = true;
+	lineChart.height = 250
+	 lineChart.width = am4core.percent(100);
   lineChart.fontSize = "0.8em";
   lineChart.paddingRight = 30;
   lineChart.paddingLeft = 30;
@@ -80,195 +95,37 @@ export function makeChart(label: string){
   lineChart.zoomOutButton.disabled = true;
   lineChart.paddingBottom = 5;
   lineChart.paddingTop = 3;
+	let title = lineChart.titles.push(new am4core.Label());
+	title.text = "Fake COVID-19 cases";
+	title.marginBottom = 15;
+	lineChart.data = data;
+	//console.log(polygonTemplate, activeState)
+	// below doesn't seem to work
+	//lineChart.dataSource.url = "./data/testingData.json"
+	//	lineChart.dataSource.parser = new am4core.JSONParser();
+	//	console.log(lineChart.data)
+	//	var mydata = JSON.parse("./data/testingData.json");
 
-	lineChart.data = [{
-  "x": 1,
-  "ay": 6.5,
-  "by": 2.2,
-  "aValue": 15,
-  "bValue": 10
-}, {
-  "x": 2,
-  "ay": 12.3,
-  "by": 4.9,
-  "aValue": 8,
-  "bValue": 3
-}, {
-  "x": 3,
-  "ay": 12.3,
-  "by": 5.1,
-  "aValue": 16,
-  "bValue": 4
-}, {
-  "x": 5,
-  "ay": 2.9,
-  "aValue": 9
-}, {
-  "x": 7,
-  "by": 8.3,
-  "bValue": 13
-}, {
-  "x": 10,
-  "ay": 2.8,
-  "by": 13.3,
-  "aValue": 9,
-  "bValue": 13
-}, {
-  "x": 12,
-  "ay": 3.5,
-  "by": 6.1,
-  "aValue": 5,
-  "bValue": 2
-}, {
-  "x": 13,
-  "ay": 5.1,
-  "aValue": 10
-}, {
-  "x": 15,
-  "ay": 6.7,
-  "by": 10.5,
-  "aValue": 3,
-  "bValue": 10
-}, {
-  "x": 16,
-  "ay": 8,
-  "by": 12.3,
-  "aValue": 5,
-  "bValue": 13
-}, {
-  "x": 20,
-  "by": 4.5,
-  "bValue": 11
-}, {
-  "x": 22,
-  "ay": 9.7,
-  "by": 15,
-  "aValue": 15,
-  "bValue": 10
-}, {
-  "x": 23,
-  "ay": 10.4,
-  "by": 10.8,
-  "aValue": 1,
-  "bValue": 11
-}, {
-  "x": 24,
-  "ay": 1.7,
-  "by": 19,
-  "aValue": 12,
-  "bValue": 3
-}];
 	//var graticuleSeries =  mapChart.series.push(new am4maps.GraticuleSeries());
+let xAxis = lineChart.xAxes.push(new am4charts.DateAxis());
+xAxis.renderer.minGridDistance = 40;
 
-	//}); // end am4core.ready()
-};
+// Create value axis
+let yAxis = lineChart.yAxes.push(new am4charts.ValueAxis());
 
-export function interactivePlot(label: string){
-	let container = am4core.create(label, am4core.Container);
-  container.width = am4core.percent(100);
-  container.height = am4core.percent(100);
-  container.fontSize = "0.9em";
-	 // buttons &  mapChartcontainer
-	let buttonsAndChartContainer = container.createChild(am4core.Container);
-	buttonsAndChartContainer.layout = "vertical";
-	buttonsAndChartContainer.height = am4core.percent(45); // make this bigger if you want more space for the  mapChart
-	buttonsAndChartContainer.width = am4core.percent(100);
-	buttonsAndChartContainer.valign = "bottom";
-	// Chart & slider container
-	let  mapChartAndSliderContainer = buttonsAndChartContainer.createChild(am4core.Container);
-	 mapChartAndSliderContainer.layout = "vertical";
-	 mapChartAndSliderContainer.height = am4core.percent(100);
-	 mapChartAndSliderContainer.width = am4core.percent(100);
-	 mapChartAndSliderContainer.background = new am4core.RoundedRectangle();
-	 mapChartAndSliderContainer.background.fill = am4core.color("#000000");
-	 mapChartAndSliderContainer.background.cornerRadius(30, 30, 0, 0)
-	 mapChartAndSliderContainer.background.fillOpacity = 0.25;
-	 mapChartAndSliderContainer.paddingTop = 12;
-	 mapChartAndSliderContainer.paddingBottom = 0;
-	let lineChart =  mapChartAndSliderContainer.createChild(am4charts.XYChart);
-  lineChart.fontSize = "0.8em";
-  lineChart.paddingRight = 30;
-  lineChart.paddingLeft = 30;
-  lineChart.maskBullets = false;
-  lineChart.zoomOutButton.disabled = true;
-  lineChart.paddingBottom = 5;
-  lineChart.paddingTop = 3;
+// Create series
+let series1 = lineChart.series.push(new am4charts.LineSeries());
+lineChart.dateFormatter.dateFormat = "yyyy-MM-dd";
+series1.dataFields.dateX = "date";
+series1.dataFields.valueY = "value";
+series1.strokeWidth = 2;	//}); // end am4core.ready()i
 
-	lineChart.data = [{
-  "x": 1,
-  "ay": 6.5,
-  "by": 2.2,
-  "aValue": 15,
-  "bValue": 10
-}, {
-  "x": 2,
-  "ay": 12.3,
-  "by": 4.9,
-  "aValue": 8,
-  "bValue": 3
-}, {
-  "x": 3,
-  "ay": 12.3,
-  "by": 5.1,
-  "aValue": 16,
-  "bValue": 4
-}, {
-  "x": 5,
-  "ay": 2.9,
-  "aValue": 9
-}, {
-  "x": 7,
-  "by": 8.3,
-  "bValue": 13
-}, {
-  "x": 10,
-  "ay": 2.8,
-  "by": 13.3,
-  "aValue": 9,
-  "bValue": 13
-}, {
-  "x": 12,
-  "ay": 3.5,
-  "by": 6.1,
-  "aValue": 5,
-  "bValue": 2
-}, {
-  "x": 13,
-  "ay": 5.1,
-  "aValue": 10
-}, {
-  "x": 15,
-  "ay": 6.7,
-  "by": 10.5,
-  "aValue": 3,
-  "bValue": 10
-}, {
-  "x": 16,
-  "ay": 8,
-  "by": 12.3,
-  "aValue": 5,
-  "bValue": 13
-}, {
-  "x": 20,
-  "by": 4.5,
-  "bValue": 11
-}, {
-  "x": 22,
-  "ay": 9.7,
-  "by": 15,
-  "aValue": 15,
-  "bValue": 10
-}, {
-  "x": 23,
-  "ay": 10.4,
-  "by": 10.8,
-  "aValue": 1,
-  "bValue": 11
-}, {
-  "x": 24,
-  "ay": 1.7,
-  "by": 19,
-  "aValue": 12,
-  "bValue": 3
-}];
+function randomValues(){
+	//lineChart
+for (let i of lineChart.data) {
+		i.value += Math.random()*10 
+	//console.log(i.ay)
 }
+series1.invalidateRawData()
+}
+};
