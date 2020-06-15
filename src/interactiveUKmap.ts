@@ -12,23 +12,25 @@ export function makeChart(label: string){
 	am4core.useTheme(am4themes_animated);
 	// Themes end
 
+	////////////////////////////////////////////////////////////// 
 	// Create map instance
+	////////////////////////////////////////////////////////////// 
 	let container = am4core.create(label, am4core.Container)
-	  container.width = am4core.percent(100);
-  container.height = am4core.percent(100);
+	container.width = am4core.percent(100);
+	container.height = am4core.percent(100);
 	let  mapChart= container.createChild(am4maps.MapChart);
 
-// zoomout on background click (seems broken)
+	// zoomout on background click (seems broken)
 	//mapChart.chartContainer.background.events.on("hit", function () { zoomOut() });
 	mapChart.height = am4core.percent(100);
-  mapChart.seriesContainer.draggable = false;
-  mapChart.seriesContainer.resizable = false;
-  mapChart.maxZoomLevel = 1;
+	mapChart.seriesContainer.draggable = false;
+	mapChart.seriesContainer.resizable = false;
+	mapChart.maxZoomLevel = 1;
 	// Set map definition
-	 mapChart.geodata = am4geodata_ukCountiesHigh;
-console.log(mapChart.geodata)
+	mapChart.geodata = am4geodata_ukCountiesHigh;
+	console.log(mapChart.geodata)
 	// Set projection
-	 mapChart.projection = new am4maps.projections.Miller();
+	mapChart.projection = new am4maps.projections.Miller();
 
 	// Create map polygon series
 	var polygonSeries =  mapChart.series.push(new am4maps.MapPolygonSeries());
@@ -53,39 +55,140 @@ console.log(mapChart.geodata)
 	var activeState = polygonTemplate.states.create("active");
 	activeState.properties.fill =  mapChart.colors.getIndex(4);
 
-  mapChart.events.on("ready", function (ev) {
-    var ireland = polygonSeries.getPolygonById("IE");
-    console.log("ireland:", ireland);
-    ireland.setState("disabled");
-    //ireland.interactionsEnabled = false;
-    //ireland.events.disable();
-  });
+	// Create highlight state and set alternative fill color (alias for hover)
+	// This is a duplicate of hover, but is needed because hover contains additional hidden logic
+	var highlightState = polygonTemplate.states.create("highlight");
+	highlightState.properties.fill = mapChart.colors.getIndex(2);
 
-  // Create a custom state
-  var disabledState = polygonTemplate.states.create("disabled");
-  disabledState.properties.fill = am4core.color("#001");
-  disabledState.properties.fillOpacity = 0.2;
-  disabledState.properties.shiftRadius = 0;
-  disabledState.properties.scale = 1;
-  disabledState.properties.hoverable = false;
-  disabledState.properties.clickable = false;
+	var aliasActiveState = polygonTemplate.states.create("aliasActive");
+	aliasActiveState.properties.fill = mapChart.colors.getIndex(4);
 
-  polygonSeries.mapPolygons.template.adapter.add("tooltipText", function(text, target) {
-    if (target.dataItem.dataContext.id == "IE") {
-      return "";
-    }
-    return text;
-  });
+	var aliasDefaultState = polygonTemplate.states.create("aliasDefault");
+	aliasDefaultState.properties.fill = mapChart.colors.getIndex(0);
+
 	// Create an event to toggle "active" state
 	polygonTemplate.events.on("hit", function(ev) {
 		ev.target.isActive = !ev.target.isActive;
-		console.log(ev.target)
-		console.log(polygonSeries)
-		console.log(ev.target.getPropertyValue("id"))
+		//console.log(ev.target)
+		//console.log(polygonSeries)
+		//console.log(ev.target.getPropertyValue("id"))
+		//setSmallMapColor()
 		randomValues() //right now random values are plotten
 	})
 
+	//Small map to toggle features
+	mapChart.smallMap = new am4maps.SmallMap();
+	mapChart.smallMap.series.push(polygonSeries);
 
+	// Disable pan and zoom comtrols
+	mapChart.smallMap.draggable = false;
+	mapChart.smallMap.resizable = false;
+	mapChart.smallMap.maxZoomLevel = 1;
+	mapChart.smallMap.rectangle.strokeWidth = 0;
+	//mapChart.smallMap.tooltipText = "UK";
+	// mapChart.smallMap.create("hover");
+	//mapChart.smallMap.properties.fill = am4core.color("#ffffff");
+	//mapChart.smallMap.togglable = true;
+	//mapChart.smallMap.events.disable();
+	
+	//Disable Ireland
+	var ireland;
+	mapChart.events.on("ready", function (ev) {
+		ireland = polygonSeries.getPolygonById("IE");
+		console.log("ireland:", ireland);
+		ireland.setState("disabled");
+		//ireland.interactionsEnabled = false;
+		//ireland.events.disable();
+	});
+
+	// Create a custom state
+	var disabledState = polygonTemplate.states.create("disabled");
+	disabledState.properties.fill = am4core.color("#001");
+	disabledState.properties.fillOpacity = .2;
+	disabledState.properties.shiftRadius = 0;
+	disabledState.properties.scale = 1;
+	disabledState.properties.hoverable = false;
+	disabledState.properties.clickable = false;
+
+	polygonSeries.mapPolygons.template.adapter.add("tooltipText", function(text, target) {
+		if (target.dataItem.dataContext.id == "IE") {
+			return "";
+		}
+		return text;
+	});
+
+	var smallSeries = mapChart.smallMap.series.getIndex(0);
+	var smallTemplate = smallSeries.mapPolygons.template;
+	smallTemplate.stroke = smallSeries.mapPolygons.template.fill;
+	smallTemplate.strokeWidth = 0;
+	smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
+	smallTemplate.polygon.fillOpacity = 1;
+
+
+	//////////////////////////////////////////
+	// smallMap events 
+
+	//If any county is already selected, select all counties. If all are selected, deselect all.
+	mapChart.smallMap.events.on("hit", function (ev) {
+		mapChart.goHome();    //Big map does not move when smallMap is clicked on
+		if (allCountiesAreActive()) {
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				mapPolygon.dispatchImmediately("hit")
+			})
+		} else if (atLeastOneCountyIsActive()) {
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				if (!mapPolygon.isActive) {
+					//mapPolygon.dispatch("hit")
+					mapPolygon.dispatchImmediately("hit");
+				}
+				mapPolygon.setState("aliasActive");
+			})
+		} else {   //All counties are inactive
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				mapPolygon.dispatchImmediately("hit")
+			})
+		}
+		setSmallMapColor();
+		ireland.setState("disabled");
+	}) //end hit
+
+
+	function setSmallMapColor() {
+		if (allCountiesAreActive()) {
+			smallTemplate.polygon.fill = mapChart.colors.getIndex(0); 
+		} else {
+			smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
+		}
+		ireland.setState("disabled");
+	}
+
+	////////////////////////////
+	// Using 2 separate functions for clarity
+	function atLeastOneCountyIsActive() {
+		let oneActive = false;
+		polygonSeries.mapPolygons.each(function (mapPolygon) {
+			if (mapPolygon.isActive) {
+				oneActive = true;
+			}
+		})
+		return oneActive;
+	}
+
+	function allCountiesAreActive() { let allActive = true;
+		polygonSeries.mapPolygons.each(function (mapPolygon) { if (
+			(!mapPolygon.isActive) &&
+			(mapPolygon.dataItem.dataContext.id != "IE")) {
+			console.log("*******NOT ACTIVE*******", mapPolygon,
+				"name:", mapPolygon.dataItem.dataContext.name,
+				"acive?", mapPolygon.isActive) allActive =
+				false; } }); return allActive; }
+	///////////////////////////////////////////////////////////////////////
+	//Pie chart
+	//////////////////////////////////////////////////////////////////////
+	
+	///////////////////////////////////////////////////////////////////////
+	//Line charts
+	//////////////////////////////////////////////////////////////////////
 	let buttonsAndChartContainer = container.createChild(am4core.Container);
 	buttonsAndChartContainer.layout = "vertical";
 	var bccWidth = 30;
@@ -93,30 +196,30 @@ console.log(mapChart.geodata)
 	buttonsAndChartContainer.width = am4core.percent(bccWidth);
 	buttonsAndChartContainer.valign = "bottom";
 	buttonsAndChartContainer.x = am4core.percent(100-bccWidth);
-buttonsAndChartContainer.verticalCenter = "top";
+	buttonsAndChartContainer.verticalCenter = "top";
 	// Chart & slider container
 	let  mapChartAndSliderContainer = buttonsAndChartContainer.createChild(am4core.Container);
-	 mapChartAndSliderContainer.layout = "vertical";
-	 mapChartAndSliderContainer.height = am4core.percent(25);
-	 mapChartAndSliderContainer.width = am4core.percent(100);
-	 mapChartAndSliderContainer.background = new am4core.RoundedRectangle();
+	mapChartAndSliderContainer.layout = "vertical";
+	mapChartAndSliderContainer.height = am4core.percent(25);
+	mapChartAndSliderContainer.width = am4core.percent(100);
+	mapChartAndSliderContainer.background = new am4core.RoundedRectangle();
 	//mapChartAndSliderContainer.background.fill = am4core.color("#000000");
-	 mapChartAndSliderContainer.background.cornerRadius(30, 0, 30, 30)
-	 mapChartAndSliderContainer.background.fillOpacity = 0.1;
-	 mapChartAndSliderContainer.paddingTop = 12;
-	 mapChartAndSliderContainer.paddingBottom = 0;
+	mapChartAndSliderContainer.background.cornerRadius(30, 0, 30, 30)
+	mapChartAndSliderContainer.background.fillOpacity = 0.1;
+	mapChartAndSliderContainer.paddingTop = 12;
+	mapChartAndSliderContainer.paddingBottom = 0;
 	let lineChart =  mapChartAndSliderContainer.createChild(am4charts.XYChart);
 	//lineChart.height = am4core.percent(25);
 	lineChart.responsive.enabled = true;
 	lineChart.height = 250
-	 lineChart.width = am4core.percent(100);
-  lineChart.fontSize = "0.8em";
-  lineChart.paddingRight = 30;
-  lineChart.paddingLeft = 30;
-  lineChart.maskBullets = false;
-  lineChart.zoomOutButton.disabled = true;
-  lineChart.paddingBottom = 5;
-  lineChart.paddingTop = 3;
+	lineChart.width = am4core.percent(100);
+	lineChart.fontSize = "0.8em";
+	lineChart.paddingRight = 30;
+	lineChart.paddingLeft = 30;
+	lineChart.maskBullets = false;
+	lineChart.zoomOutButton.disabled = true;
+	lineChart.paddingBottom = 5;
+	lineChart.paddingTop = 3;
 	let title = lineChart.titles.push(new am4core.Label());
 	title.text = "Fake COVID-19 cases";
 	title.marginBottom = 15;
@@ -129,25 +232,25 @@ buttonsAndChartContainer.verticalCenter = "top";
 	//	var mydata = JSON.parse("./data/testingData.json");
 
 	//var graticuleSeries =  mapChart.series.push(new am4maps.GraticuleSeries());
-let xAxis = lineChart.xAxes.push(new am4charts.DateAxis());
-xAxis.renderer.minGridDistance = 40;
+	let xAxis = lineChart.xAxes.push(new am4charts.DateAxis());
+	xAxis.renderer.minGridDistance = 40;
 
-// Create value axis
-let yAxis = lineChart.yAxes.push(new am4charts.ValueAxis());
+	// Create value axis
+	let yAxis = lineChart.yAxes.push(new am4charts.ValueAxis());
 
-// Create series
-let series1 = lineChart.series.push(new am4charts.LineSeries());
-lineChart.dateFormatter.dateFormat = "yyyy-MM-dd";
-series1.dataFields.dateX = "date";
-series1.dataFields.valueY = "value";
-series1.strokeWidth = 2;	//}); // end am4core.ready()i
+	// Create series
+	let series1 = lineChart.series.push(new am4charts.LineSeries());
+	lineChart.dateFormatter.dateFormat = "yyyy-MM-dd";
+	series1.dataFields.dateX = "date";
+	series1.dataFields.valueY = "value";
+	series1.strokeWidth = 2;	//}); // end am4core.ready()i
 
-function randomValues(){
-	//lineChart
-for (let i of lineChart.data) {
-		i.value += Math.random()*10 
-	//console.log(i.ay)
-}
-series1.invalidateRawData()
-}
+	function randomValues(){
+		//lineChart
+		for (let i of lineChart.data) {
+			i.value += Math.random()*10 
+			//console.log(i.ay)
+		}
+		series1.invalidateRawData()
+	}
 };
