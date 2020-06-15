@@ -21,10 +21,9 @@ export function makeChart(label: string){
 // zoomout on background click (seems broken)
 	//mapChart.chartContainer.background.events.on("hit", function () { zoomOut() });
 	mapChart.height = am4core.percent(100);
-		mapChart.zoomControl = new am4maps.ZoomControl();
-	  mapChart.zoomControl.align = "middle";
-	  mapChart.zoomControl.marginRight = 0;
-	  mapChart.zoomControl.valign = "middle";
+  mapChart.seriesContainer.draggable = false;
+  mapChart.seriesContainer.resizable = false;
+  mapChart.maxZoomLevel = 1;
 	// Set map definition
 	 mapChart.geodata = am4geodata_ukCountiesHigh;
 console.log(mapChart.geodata)
@@ -54,6 +53,29 @@ console.log(mapChart.geodata)
 	var activeState = polygonTemplate.states.create("active");
 	activeState.properties.fill =  mapChart.colors.getIndex(4);
 
+  mapChart.events.on("ready", function (ev) {
+    var ireland = polygonSeries.getPolygonById("IE");
+    console.log("ireland:", ireland);
+    ireland.setState("disabled");
+    //ireland.interactionsEnabled = false;
+    //ireland.events.disable();
+  });
+
+  // Create a custom state
+  var disabledState = polygonTemplate.states.create("disabled");
+  disabledState.properties.fill = am4core.color("#001");
+  disabledState.properties.fillOpacity = 0.2;
+  disabledState.properties.shiftRadius = 0;
+  disabledState.properties.scale = 1;
+  disabledState.properties.hoverable = false;
+  disabledState.properties.clickable = false;
+
+  polygonSeries.mapPolygons.template.adapter.add("tooltipText", function(text, target) {
+    if (target.dataItem.dataContext.id == "IE") {
+      return "";
+    }
+    return text;
+  });
 	// Create an event to toggle "active" state
 	polygonTemplate.events.on("hit", function(ev) {
 		ev.target.isActive = !ev.target.isActive;
