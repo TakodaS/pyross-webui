@@ -5,7 +5,7 @@ import * as am4charts from "@amcharts/amcharts4/charts";
 import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
-import {data} from './data/testingData.json';
+import * as jsdata from './data/UK.json';
 
 export function makeChart(label: string){
 	// Themes begin
@@ -22,13 +22,14 @@ export function makeChart(label: string){
 
 	// zoomout on background click (seems broken)
 	//mapChart.chartContainer.background.events.on("hit", function () { zoomOut() });
+	mapChart.width = am4core.percent(50);
 	mapChart.height = am4core.percent(100);
 	mapChart.seriesContainer.draggable = false;
 	mapChart.seriesContainer.resizable = false;
 	mapChart.maxZoomLevel = 1;
 	// Set map definition
 	mapChart.geodata = am4geodata_ukCountiesHigh;
-	console.log(mapChart.geodata)
+	//console.log(mapChart.geodata)
 	// Set projection
 	mapChart.projection = new am4maps.projections.Miller();
 
@@ -66,15 +67,6 @@ export function makeChart(label: string){
 	var aliasDefaultState = polygonTemplate.states.create("aliasDefault");
 	aliasDefaultState.properties.fill = mapChart.colors.getIndex(0);
 
-	// Create an event to toggle "active" state
-	polygonTemplate.events.on("hit", function(ev) {
-		ev.target.isActive = !ev.target.isActive;
-		//console.log(ev.target)
-		//console.log(polygonSeries)
-		//console.log(ev.target.getPropertyValue("id"))
-		//setSmallMapColor()
-		randomValues() //right now random values are plotten
-	})
 
 	//Small map to toggle features
 	mapChart.smallMap = new am4maps.SmallMap();
@@ -90,12 +82,12 @@ export function makeChart(label: string){
 	//mapChart.smallMap.properties.fill = am4core.color("#ffffff");
 	//mapChart.smallMap.togglable = true;
 	//mapChart.smallMap.events.disable();
-	
+
 	//Disable Ireland
 	var ireland;
 	mapChart.events.on("ready", function (ev) {
 		ireland = polygonSeries.getPolygonById("IE");
-		console.log("ireland:", ireland);
+		//console.log("ireland:", ireland);
 		ireland.setState("disabled");
 		//ireland.interactionsEnabled = false;
 		//ireland.events.disable();
@@ -178,17 +170,12 @@ export function makeChart(label: string){
 		polygonSeries.mapPolygons.each(function (mapPolygon) { if (
 			(!mapPolygon.isActive) &&
 			(mapPolygon.dataItem.dataContext.id != "IE")) {
-			console.log("*******NOT ACTIVE*******", mapPolygon,
-				"name:", mapPolygon.dataItem.dataContext.name,
-				"acive?", mapPolygon.isActive) allActive =
+			//	console.log("*******NOT ACTIVE*******", mapPVolygon,
+			//	console				"name:", mapPolygon.dataItem.dataContext.name,
+			//	console	"acive?", mapPolygon.isActive) 
+			allActive =
 				false; } }); return allActive; }
-	///////////////////////////////////////////////////////////////////////
-	//Pie chart
-	//////////////////////////////////////////////////////////////////////
-	
-	///////////////////////////////////////////////////////////////////////
-	//Line charts
-	//////////////////////////////////////////////////////////////////////
+
 	let buttonsAndChartContainer = container.createChild(am4core.Container);
 	buttonsAndChartContainer.layout = "vertical";
 	var bccWidth = 30;
@@ -208,6 +195,18 @@ export function makeChart(label: string){
 	mapChartAndSliderContainer.background.fillOpacity = 0.1;
 	mapChartAndSliderContainer.paddingTop = 12;
 	mapChartAndSliderContainer.paddingBottom = 0;
+///////////////////////////////////////////////////////////////////////
+	//Pie chart
+	//////////////////////////////////////////////////////////////////////
+	let pieSeries = mapChartAndSliderContainer.createChild(am4charts.PieSeries);
+	pieSeries.labels.template.disabled = true;
+	pieSeries.ticks.template.disabled = true;
+	pieSeries.labels.template.disabled = true;
+	pieSeries.ticks.template.disabled = true;
+	///////////////////////////////////////////////////////////////////////
+	//Line charts
+	//////////////////////////////////////////////////////////////////////
+
 	let lineChart =  mapChartAndSliderContainer.createChild(am4charts.XYChart);
 	//lineChart.height = am4core.percent(25);
 	lineChart.responsive.enabled = true;
@@ -223,7 +222,8 @@ export function makeChart(label: string){
 	let title = lineChart.titles.push(new am4core.Label());
 	title.text = "Fake COVID-19 cases";
 	title.marginBottom = 15;
-	lineChart.data = data;
+	//	lineChart.data = children;
+	//console.log(lineChart.data)
 	//console.log(polygonTemplate, activeState)
 	// below doesn't seem to work
 	//lineChart.dataSource.url = "./data/testingData.json"
@@ -232,25 +232,58 @@ export function makeChart(label: string){
 	//	var mydata = JSON.parse("./data/testingData.json");
 
 	//var graticuleSeries =  mapChart.series.push(new am4maps.GraticuleSeries());
-	let xAxis = lineChart.xAxes.push(new am4charts.DateAxis());
+	let xAxis = lineChart.xAxes.push(new am4charts.ValueAxis());
 	xAxis.renderer.minGridDistance = 40;
 
 	// Create value axis
 	let yAxis = lineChart.yAxes.push(new am4charts.ValueAxis());
 
 	// Create series
-	let series1 = lineChart.series.push(new am4charts.LineSeries());
-	lineChart.dateFormatter.dateFormat = "yyyy-MM-dd";
-	series1.dataFields.dateX = "date";
-	series1.dataFields.valueY = "value";
-	series1.strokeWidth = 2;	//}); // end am4core.ready()i
+	//let series1 = lineChart.series.push(new am4charts.LineSeries());
+	//lineChart.dateFormatter.dateFormat = "yyyy-MM-dd";
+	//series1.dataFields.valueX = "t";
+	//series1.dataFields.valueY = "S";
+	//series1.strokeWidth = 2;	//}); // end am4core.ready()i
 
-	function randomValues(){
-		//lineChart
-		for (let i of lineChart.data) {
-			i.value += Math.random()*10 
-			//console.log(i.ay)
+	var dataForChart = [];
+
+	//////////////////////////////////////////////////
+	//Events
+	////////////////////////////////////////////////////
+	// Create an event to toggle "active" state
+	function extractVals(ev) {
+		var data = ev.target.dataItem.dataContext;
+		var hitId = data.id;
+		var hitName = data.name;
+		var hitValue = data.value;
+		var countyData = jsdata[data.id];
+		if (countyData instanceof Object){
+			var series1 = lineChart.series.push(new am4charts.LineSeries());
+			series1.strokeWidth = 2;
+			console.log(hitId)
+			series1.dataFields.valueX = countyData["t"];
+			series1.dataFields.valueY = countyData["children"]["S"];
+			console.log(jsdata[data.id]["children"])
+			series1.invalidateRawData()
 		}
-		series1.invalidateRawData()
+		else{
+			console.log("pass")
+		}
+		//	import * as data from 
+		//console.log(data)
+		//series1.invalidateRawData()
+	
 	}
+
+	polygonTemplate.events.on("hit", function(ev) {
+		ev.target.isActive = !ev.target.isActive;
+		//console.log(ev.target)
+		//console.log(polygonSeries)
+		//console.log(ev.target.getPropertyValue("id"))
+		//setSmallMapColor()
+		//randomValues() //right now random values are plotten
+
+		extractVals(ev)
+	})
+
 };
