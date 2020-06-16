@@ -84,16 +84,6 @@ export function makeChart(label: string){
 	//mapChart.smallMap.togglable = true;
 	//mapChart.smallMap.events.disable();
 
-	//Disable Ireland
-	var ireland;
-	mapChart.events.on("ready", function (ev) {
-		ireland = polygonSeries.getPolygonById("IE");
-		//console.log("ireland:", ireland);
-		ireland.setState("disabled");
-		//ireland.interactionsEnabled = false;
-		//ireland.events.disable();
-	});
-
 	// Create a custom state
 	var disabledState = polygonTemplate.states.create("disabled");
 	disabledState.properties.fill = am4core.color("#001");
@@ -116,66 +106,6 @@ export function makeChart(label: string){
 	smallTemplate.strokeWidth = 0;
 	smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
 	smallTemplate.polygon.fillOpacity = 1;
-
-
-	//////////////////////////////////////////
-	// smallMap events 
-
-	//If any county is already selected, select all counties. If all are selected, deselect all.
-	mapChart.smallMap.events.on("hit", function (ev) {
-		mapChart.goHome();    //Big map does not move when smallMap is clicked on
-		if (allCountiesAreActive()) {
-			polygonSeries.mapPolygons.each(function (mapPolygon) {
-				mapPolygon.dispatchImmediately("hit")
-			})
-		} else if (atLeastOneCountyIsActive()) {
-			polygonSeries.mapPolygons.each(function (mapPolygon) {
-				if (!mapPolygon.isActive) {
-					//mapPolygon.dispatch("hit")
-					mapPolygon.dispatchImmediately("hit");
-				}
-				mapPolygon.setState("aliasActive");
-			})
-		} else {   //All counties are inactive
-			polygonSeries.mapPolygons.each(function (mapPolygon) {
-				mapPolygon.dispatchImmediately("hit")
-			})
-		}
-		setSmallMapColor();
-		ireland.setState("disabled");
-	}) //end hit
-
-
-	function setSmallMapColor() {
-		if (allCountiesAreActive()) {
-			smallTemplate.polygon.fill = mapChart.colors.getIndex(0); 
-		} else {
-			smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
-		}
-		ireland.setState("disabled");
-	}
-
-	////////////////////////////
-	// Using 2 separate functions for clarity
-	function atLeastOneCountyIsActive() {
-		let oneActive = false;
-		polygonSeries.mapPolygons.each(function (mapPolygon) {
-			if (mapPolygon.isActive) {
-				oneActive = true;
-			}
-		})
-		return oneActive;
-	}
-
-	function allCountiesAreActive() { let allActive = true;
-		polygonSeries.mapPolygons.each(function (mapPolygon) { if (
-			(!mapPolygon.isActive) &&
-			(mapPolygon.dataItem.dataContext.id != "IE")) {
-			//	console.log("*******NOT ACTIVE*******", mapPVolygon,
-			//	console				"name:", mapPolygon.dataItem.dataContext.name,
-			//	console	"acive?", mapPolygon.isActive) 
-			allActive =
-				false; } }); return allActive; }
 
 	let buttonsAndChartContainer = container.createChild(am4core.Container);
 	buttonsAndChartContainer.layout = "vertical";
@@ -250,6 +180,8 @@ export function makeChart(label: string){
 	var dataForChart = [];
 	var selectedCounties = new Set();
 	var selectedAges = new Set();
+	var cacheCounties = new Set();
+	var cacheAges = new Set();
 
 	//////////////////////////////////////////////////
 	//Events
@@ -266,13 +198,100 @@ export function makeChart(label: string){
 		}
 		ev.target.isActive = !ev.target.isActive
 		console.log(selectedCounties);
-
-		let series1 = lineChart.series.push(new am4charts.LineSeries());
-		lineChart.data = dm.convertData(jsdata, "t", "S");
-		series1.dataFields.valueX = "x";
-		series1.dataFields.valueY = "y";
-		lineChart.invalidateData();
-	}
+		// slow, want to wait a second before updating. 
+		}
 		
+	//Disable Ireland
+	var ireland;
+	mapChart.events.on("ready", function (ev) {
+		ireland = polygonSeries.getPolygonById("IE");
+		//console.log("ireland:", ireland);
+		ireland.setState("disabled");
+		//ireland.interactionsEnabled = false;
+		//ireland.events.disable();
+	});
+
+
+	//////////////////////////////////////////
+	// smallMap events 
+
+	//If any county is already selected, select all counties. If all are selected, deselect all.
+	mapChart.smallMap.events.on("hit", function (ev) {
+		mapChart.goHome();    //Big map does not move when smallMap is clicked on
+		if (allCountiesAreActive()) {
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				mapPolygon.dispatchImmediately("hit")
+			})
+		} else if (atLeastOneCountyIsActive()) {
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				if (!mapPolygon.isActive) {
+					//mapPolygon.dispatch("hit")
+					mapPolygon.dispatchImmediately("hit");
+				}
+				mapPolygon.setState("aliasActive");
+			})
+		} else {   //All counties are inactive
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				mapPolygon.dispatchImmediately("hit")
+			})
+		}
+		setSmallMapColor();
+		ireland.setState("disabled");
+	}) //end hit
+
+
+	function setSmallMapColor() {
+		if (allCountiesAreActive()) {
+			smallTemplate.polygon.fill = mapChart.colors.getIndex(0); 
+		} else {
+			smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
+		}
+		ireland.setState("disabled");
+	}
+
+	////////////////////////////
+	// Using 2 separate functions for clarity
+	function atLeastOneCountyIsActive() {
+		let oneActive = false;
+		polygonSeries.mapPolygons.each(function (mapPolygon) {
+			if (mapPolygon.isActive) {
+				oneActive = true;
+			}
+		})
+		return oneActive;
+	}
+
+	function allCountiesAreActive() { let allActive = true;
+		polygonSeries.mapPolygons.each(function (mapPolygon) { if (
+			(!mapPolygon.isActive) &&
+			(mapPolygon.dataItem.dataContext.id != "IE")) {
+			//	console.log("*******NOT ACTIVE*******", mapPVolygon,
+			//	console				"name:", mapPolygon.dataItem.dataContext.name,
+			//	console	"acive?", mapPolygon.isActive) 
+			allActive =
+				false; } }); return allActive; 
+	}
+		setInterval(function() {
+			console.log("checking for changes");
+			if !(eqSet(cacheCounties, selectedCounties) &&
+				eqSet(cacheAges, selectedAges)){
+				console.log("difference detected")
+				let series1 = lineChart.series.push(new am4charts.LineSeries());
+				lineChart.data = dm.convertData(jsdata, "t", "S");
+				series1.dataFields.valueX = "x";
+				series1.dataFields.valueY = "y";
+				lineChart.invalidateRawData();
+
+				cacheAges = selectedAges;
+				cacheCounties = selectedCounties;
+			}
+
+					}, 300);
 
 };
+
+function eqSet(as, bs) {
+    if (as.size !== bs.size) return false;
+    for (var a of as) if (!bs.has(a)) return false;
+    return true;
+}

@@ -10,7 +10,6 @@ export function dataForChart(data, xval, yval, age="children", region="GB-CM") {
 	let xvals = datRA[xval]
 	let yvals = datRA[yval]
 	let dataForChart = [];
-	console.log(math.pi);	
 	for (var i=0; i <= xvals.length; i++){
 		dataForChart.push({"x": xvals[i],
 			"y": yvals[i]}
@@ -27,7 +26,6 @@ function combinedData(data, xval, yval, ages=["children"], regions=["GB-CM"]){
 			datRA = data[county][age];
 			xvals = data[county][xval];
 			yvals = datRA[yval];
-			console.log(yvals);
 			if (typeof xout === 'undefined'){
 				xout=xvals;
 			else if (xout != xvals){
@@ -35,15 +33,14 @@ function combinedData(data, xval, yval, ages=["children"], regions=["GB-CM"]){
 			}
 			if (typeof yout === 'undefined'){
 				yout = yvals;
-				console.log(yout, yvals);
 			}
 			else {
 				yout = math.add(yout, yvals);
 			}
 			}
 
-		}}
-	console.log(xout, yout)
+		}
+	}
 	return [xout, yout];
 }
 
