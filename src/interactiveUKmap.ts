@@ -179,7 +179,8 @@ export function makeChart(label: string){
 	var dataMapForChart = new Map();
 	var dataForChart = [];
 	var selectedCounties = new Set();
-	var selectedAges = new Set();
+	var selectedAges = new Set(["children"]);
+	//selectedAges.add("children");
 	var cacheCounties = new Set();
 	var cacheAges = new Set();
 
@@ -275,9 +276,9 @@ export function makeChart(label: string){
 			console.log("checking for changes");
 			if !(eqSet(cacheCounties, selectedCounties) &&
 				eqSet(cacheAges, selectedAges)){
-				console.log("difference detected")
+				console.log("difference detected");
 				let series1 = lineChart.series.push(new am4charts.LineSeries());
-				lineChart.data = dm.convertData(jsdata, "t", "S");
+				lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), Array.from(selectedCounties));
 				series1.dataFields.valueX = "x";
 				series1.dataFields.valueY = "y";
 				lineChart.invalidateRawData();

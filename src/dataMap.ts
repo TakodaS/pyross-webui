@@ -21,6 +21,9 @@ export function dataForChart(data, xval, yval, age="children", region="GB-CM") {
 
 function combinedData(data, xval, yval, ages=["children"], regions=["GB-CM"]){
 	var datRA, xvals, yvals, yout, xout;
+	if (regions == ["all"]){
+		regions=data
+	}
 	for (var county of regions){
 		for (var age of ages){
 			datRA = data[county][age];
@@ -44,7 +47,13 @@ function combinedData(data, xval, yval, ages=["children"], regions=["GB-CM"]){
 	return [xout, yout];
 }
 
-export function convertData(data, xval, yval, ages=["children"], regions=["GB-CM"]){
+export function convertData(data, xval, yval, ages=[], regions=[]){
+	if (ages.length == 0){
+		ages=["all"];
+	}
+	if (regions.length==0){
+		regions=["all"]
+	}
 	var dataForChart = [];
 	var data = combinedData(data, xval, yval, ages, regions);
 	var xvals = data[0];
