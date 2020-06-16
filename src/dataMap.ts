@@ -72,3 +72,32 @@ export function convertData(data, xval, yval, ages=[], regions=[]){
 	return dataForChart;
 }
 
+export function getAgeData(data, currentTime, ages=["children", "Adults"]){
+	//returns age data for pie chart along with proportions
+	//at current time
+	var datRA, ageTotal, t, closest, index, ageDict;
+	var pieList = [];
+	var goal = currentTime;
+	var regions=Object.keys(data)
+	regions.pop(); //remove "default" KEYVALUE
+	for (var age of ages){
+		ageTotal=0;
+		ageDict = {};
+		for (var county of regions){
+			datRA = data[county][age];
+			t = data[county]["t"];
+			closest = t.reduce(function(prev, curr) {
+				return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);});
+			index = t.indexOf(closest);
+			for (var key of Object.keys(datRA)){
+				ageTotal += datRA[key][index];
+			}
+			
+		}
+		ageDict["ageRange"]=age;
+		ageDict["value"]=Math.round(ageTotal);
+		pieList.push(ageDict);
+	}
+	return pieList;
+}
+

@@ -127,14 +127,116 @@ export function makeChart(label: string){
 	mapChartAndSliderContainer.background.fillOpacity = 0.1;
 	mapChartAndSliderContainer.paddingTop = 12;
 	mapChartAndSliderContainer.paddingBottom = 0;
-///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
 	//Pie chart
 	//////////////////////////////////////////////////////////////////////
-	let pieSeries = mapChartAndSliderContainer.createChild(am4charts.PieSeries);
-	pieSeries.labels.template.disabled = true;
-	pieSeries.ticks.template.disabled = true;
-	pieSeries.labels.template.disabled = true;
-	pieSeries.ticks.template.disabled = true;
+	let pieChart = mapChartAndSliderContainer.createChild(am4charts.PieChart);
+	pieChart.hiddenState.properties.opacity = 0; // this creates initial fade-in
+	pieChart.seriesContainer.zIndex = -1;
+	pieChart.data = dm.getAgeData(jsdata, 100);
+	console.log(pieChart.data);
+
+	var series = pieChart.series.push(new am4charts.PieSeries());
+	series.dataFields.value = "value";
+	//series.dataFields.radiusValue = "value";
+	series.dataFields.category = "ageRange";
+	series.slices.template.cornerRadius = 6;
+	series.colors.step = 3;
+	pieChart.innerRadius = am4core.percent(0);
+
+	series.hiddenState.properties.endAngle = -90;
+
+	series.labels.template.text = "{ageRange}";
+	series.slices.template.tooltipText = "{value}";
+
+	let as = series.slices.template.states.getKey("active");
+	as.properties.shiftRadius = 0.4;
+	as.properties.strokeWidth = 2;
+	as.properties.strokeOpacity = 1;
+	as.properties.fillOpacity = 1;
+
+	// Put a thick border around each Slice
+	series.slices.template.stroke = am4core.color("#4a2abb");
+	series.slices.template.strokeWidth = 1;
+	series.slices.template.strokeOpacity = 0.2;
+	series.slices.template.fillOpacity = 1;
+	// series.labels.template.disabled = true;
+	// series.ticks.template.disabled = true;
+
+	//curved labels
+	series.alignLabels = false;
+	series.labels.template.bent = true;
+	series.labels.template.radius = -10;
+	series.labels.template.padding(0, 0, 0, 0);
+	series.labels.template.fill = am4core.color("#000");
+	series.ticks.template.disabled = true;
+
+	//rotated labels
+	// series.ticks.template.disabled = true;
+	// series.alignLabels = false;
+	// series.labels.template.text = "{ageRange}";
+	// series.labels.template.radius = am4core.percent(-40);
+	// series.labels.template.fill = am4core.color("black");
+	// series.labels.template.relativeRotation = 90;
+
+	//Fonts
+	series.labels.template.fontSize = 10;
+	series.labels.template.fontFamily = "Times";
+	series.labels.template.fontWeight = "bold";
+
+	//pieChart.legend = new am4charts.Legend();
+
+	//Label: total of selected slices
+	var container = new am4core.Container();
+	container.parent = series;
+	container.horizontalCenter = "middle";
+	container.verticalCenter = "middle";
+	container.width = am4core.percent(1) / Math.sqrt(2);
+	container.fill = "white";
+	//container.zIndex = -1;
+
+	var label = new am4core.Label();
+	label.parent = container;
+	//var total = totalValue();
+	var total = 0;
+	label.text = total;
+
+	//label.text = "0";
+	label.horizontalCenter = "middle";
+	label.verticalCenter = "middle";
+	label.fontSize = 15;
+	label.fontFamily = "Times";
+	label.fontWeight = "bold";
+
+	// Add or subtract slices value from total value
+	series.slices.template.events.on("hit", function (ev) {
+		let data = ev.target.dataItem.dataContext;
+		let hitValue = data.value;
+		if (!ev.target.isActive) {
+			total = total - hitValue;
+		} else {
+			total = total + hitValue;
+		}
+		label.text = total;
+	}); // end event hit
+
+	//Find total of all slices   {values.value.sum}
+	// function totalValue() {
+	//   tVal = 0;
+	//   let arr = series.dataProvider._data;
+	//   for (i = 0; i < arr.length; i++) {
+	//     tVal = tVal + arr[i].value;
+	//   }
+	//   return tVal;
+	// }
+
+	///////////////////////////////////
+	//Propogate hover and hit events on a label to the underlying slice
+	series.labels.template.events.on("over", function (ev) {
+		let parentSlice = ev.target._dataItem._slice;
+		parentSlice.dispatchImmediately("hit");
+	});
+
 	///////////////////////////////////////////////////////////////////////
 	//Line charts
 	//////////////////////////////////////////////////////////////////////
@@ -172,7 +274,6 @@ export function makeChart(label: string){
 	//series1.dataFields.valueY = "S";
 	//series1.strokeWidth = 2;	//}); // end am4core.ready()i
 
-	var dataMapForChart = new Map();
 	var dataForChart = [];
 	var selectedCounties = new Set();
 	var selectedAges = new Set(["children"]);
@@ -207,78 +308,78 @@ export function makeChart(label: string){
 		ev.target.isActive = !ev.target.isActive
 		console.log(selectedCounties);
 		// slow, want to wait a second before updating. 
-		}
-		
-	//Disable Ireland
-	var ireland;
-	mapChart.events.on("ready", function (ev) {
-		ireland = polygonSeries.getPolygonById("IE");
-		//console.log("ireland:", ireland);
-		ireland.setState("disabled");
-		//ireland.interactionsEnabled = false;
-		//ireland.events.disable();
-	});
-
-
-	//////////////////////////////////////////
-	// smallMap events 
-
-	//If any county is already selected, select all counties. If all are selected, deselect all.
-	mapChart.smallMap.events.on("hit", function (ev) {
-		mapChart.goHome();    //Big map does not move when smallMap is clicked on
-		if (allCountiesAreActive()) {
-			polygonSeries.mapPolygons.each(function (mapPolygon) {
-				mapPolygon.dispatchImmediately("hit")
-			})
-		} else if (atLeastOneCountyIsActive()) {
-			polygonSeries.mapPolygons.each(function (mapPolygon) {
-				if (!mapPolygon.isActive) {
-					//mapPolygon.dispatch("hit")
-					mapPolygon.dispatchImmediately("hit");
-				}
-				mapPolygon.setState("aliasActive");
-			})
-		} else {   //All counties are inactive
-			polygonSeries.mapPolygons.each(function (mapPolygon) {
-				mapPolygon.dispatchImmediately("hit")
-			})
-		}
-		setSmallMapColor();
-		ireland.setState("disabled");
-	}) //end hit
-
-
-	function setSmallMapColor() {
-		if (allCountiesAreActive()) {
-			smallTemplate.polygon.fill = mapChart.colors.getIndex(0); 
-		} else {
-			smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
-		}
-		ireland.setState("disabled");
 	}
 
-	////////////////////////////
-	// Using 2 separate functions for clarity
-	function atLeastOneCountyIsActive() {
-		let oneActive = false;
-		polygonSeries.mapPolygons.each(function (mapPolygon) {
-			if (mapPolygon.isActive) {
-				oneActive = true;
+		//Disable Ireland
+		var ireland;
+		mapChart.events.on("ready", function (ev) {
+			ireland = polygonSeries.getPolygonById("IE");
+			//console.log("ireland:", ireland);
+			ireland.setState("disabled");
+			//ireland.interactionsEnabled = false;
+			//ireland.events.disable();
+		});
+
+
+		//////////////////////////////////////////
+		// smallMap events 
+
+		//If any county is already selected, select all counties. If all are selected, deselect all.
+		mapChart.smallMap.events.on("hit", function (ev) {
+			mapChart.goHome();    //Big map does not move when smallMap is clicked on
+			if (allCountiesAreActive()) {
+				polygonSeries.mapPolygons.each(function (mapPolygon) {
+					mapPolygon.dispatchImmediately("hit")
+				})
+			} else if (atLeastOneCountyIsActive()) {
+				polygonSeries.mapPolygons.each(function (mapPolygon) {
+					if (!mapPolygon.isActive) {
+						//mapPolygon.dispatch("hit")
+						mapPolygon.dispatchImmediately("hit");
+					}
+					mapPolygon.setState("aliasActive");
+				})
+			} else {   //All counties are inactive
+				polygonSeries.mapPolygons.each(function (mapPolygon) {
+					mapPolygon.dispatchImmediately("hit")
+				})
 			}
-		})
-		return oneActive;
-	}
+			setSmallMapColor();
+			ireland.setState("disabled");
+		}) //end hit
 
-	function allCountiesAreActive() { let allActive = true;
-		polygonSeries.mapPolygons.each(function (mapPolygon) { if (
-			(!mapPolygon.isActive) &&
-			(mapPolygon.dataItem.dataContext.id != "IE")) {
-			//	console.log("*******NOT ACTIVE*******", mapPVolygon,
-			//	console				"name:", mapPolygon.dataItem.dataContext.name,
-			//	console	"acive?", mapPolygon.isActive) 
-			allActive =
-				false; } }); return allActive; 
-	}
+
+		function setSmallMapColor() {
+			if (allCountiesAreActive()) {
+				smallTemplate.polygon.fill = mapChart.colors.getIndex(0); 
+			} else {
+				smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
+			}
+			ireland.setState("disabled");
+		}
+
+		////////////////////////////
+		// Using 2 separate functions for clarity
+		function atLeastOneCountyIsActive() {
+			let oneActive = false;
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				if (mapPolygon.isActive) {
+					oneActive = true;
+				}
+			})
+			return oneActive;
+		}
+
+		function allCountiesAreActive() { let allActive = true;
+			polygonSeries.mapPolygons.each(function (mapPolygon) { if (
+				(!mapPolygon.isActive) &&
+				(mapPolygon.dataItem.dataContext.id != "IE")) {
+				//	console.log("*******NOT ACTIVE*******", mapPVolygon,
+				//	console				"name:", mapPolygon.dataItem.dataContext.name,
+				//	console	"acive?", mapPolygon.isActive) 
+				allActive =
+					false; } }); return allActive; 
+		}
 		setInterval(function() {
 			console.log("checking for changes");
 			if !(utils.eqSet(cacheCounties, selectedCounties) &&
@@ -291,7 +392,7 @@ export function makeChart(label: string){
 				cacheCounties = new Set(selectedCounties);
 			}
 
-					}, 300);
+		}, 300);
 
 };
 
