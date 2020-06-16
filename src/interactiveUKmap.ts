@@ -6,6 +6,7 @@ import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
 import * as jsdata from './data/UK.json';
+import * as dm from './dataMap.ts';
 
 export function makeChart(label: string){
 	// Themes begin
@@ -245,6 +246,7 @@ export function makeChart(label: string){
 	//series1.dataFields.valueY = "S";
 	//series1.strokeWidth = 2;	//}); // end am4core.ready()i
 
+	var dataMapForChart = new Map();
 	var dataForChart = [];
 
 	//////////////////////////////////////////////////
@@ -255,16 +257,23 @@ export function makeChart(label: string){
 		var data = ev.target.dataItem.dataContext;
 		var hitId = data.id;
 		var hitName = data.name;
-		var hitValue = data.value;
-		var countyData = jsdata[data.id];
-		if (countyData instanceof Object){
+		var hitValue = jsdata[data.id];
+
+		if (ev.target.isActive) {
+			dataMapForChart.delete(hitName, hitValue);
+		} else if (hitId != "IE") {
+			dataMapForChart.set(hitName, hitValue);  // NB should use Id as it is unique 
+		}
+
+		dataForChart = [];
+		dataMapForChart.forEach(mapToArray);
+		lineChart.data = dataForChart; 
+		if (hitValue instanceof Object){
 			var series1 = lineChart.series.push(new am4charts.LineSeries());
 			series1.strokeWidth = 2;
-			console.log(hitId)
-			series1.dataFields.valueX = countyData["t"];
-			series1.dataFields.valueY = countyData["children"]["S"];
-			console.log(jsdata[data.id]["children"])
-			series1.invalidateRawData()
+			series1.dataFields.valueX = "t";
+			series1.dataFields.valueY = "S";
+			series1.invalidateData()
 		}
 		else{
 			console.log("pass")
@@ -275,8 +284,16 @@ export function makeChart(label: string){
 	
 	}
 
+	function mapToArray(value, key, map) {
+			//console.log(value["t"].entries());
+		for (var i=0; i<value["t"].length; i++){
+		dataForChart.push({ "county": key, "S": value["children"]["S"][i], "t": value["t"][i] });
+		//console.log(dataForChart);
+		}
+	}
+
+
 	polygonTemplate.events.on("hit", function(ev) {
-		ev.target.isActive = !ev.target.isActive;
 		//console.log(ev.target)
 		//console.log(polygonSeries)
 		//console.log(ev.target.getPropertyValue("id"))
@@ -284,6 +301,10 @@ export function makeChart(label: string){
 		//randomValues() //right now random values are plotten
 
 		extractVals(ev)
+
+		ev.target.isActive = !ev.target.isActive;
+
+		console.log(dataForChart)
 	})
 
 };
