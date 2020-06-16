@@ -248,63 +248,31 @@ export function makeChart(label: string){
 
 	var dataMapForChart = new Map();
 	var dataForChart = [];
+	var selectedCounties = new Set();
+	var selectedAges = new Set();
 
 	//////////////////////////////////////////////////
 	//Events
 	////////////////////////////////////////////////////
 	// Create an event to toggle "active" state
-	function extractVals(ev) {
-		var data = ev.target.dataItem.dataContext;
-		var hitId = data.id;
-		var hitName = data.name;
-		var hitValue = jsdata[data.id];
-
-		if (ev.target.isActive) {
-			dataMapForChart.delete(hitName, hitValue);
-		} else if (hitId != "IE") {
-			dataMapForChart.set(hitName, hitValue);  // NB should use Id as it is unique 
-		}
-
-		dataForChart = [];
-		dataMapForChart.forEach(mapToArray);
-		lineChart.data = dataForChart; 
-		if (hitValue instanceof Object){
-			var series1 = lineChart.series.push(new am4charts.LineSeries());
-			series1.strokeWidth = 2;
-			series1.dataFields.valueX = "t";
-			series1.dataFields.valueY = "S";
-			series1.invalidateData()
-		}
-		else{
-			console.log("pass")
-		}
-		//	import * as data from 
-		//console.log(data)
-		//series1.invalidateRawData()
-	
-	}
-
-	function mapToArray(value, key, map) {
-			//console.log(value["t"].entries());
-		for (var i=0; i<value["t"].length; i++){
-		dataForChart.push({ "county": key, "S": value["children"]["S"][i], "t": value["t"][i] });
-		//console.log(dataForChart);
-		}
-	}
 
 
 	polygonTemplate.events.on("hit", function(ev) {
-		//console.log(ev.target)
-		//console.log(polygonSeries)
-		//console.log(ev.target.getPropertyValue("id"))
-		//setSmallMapColor()
-		//randomValues() //right now random values are plotten
+		var data = ev.target.dataItem.dataContext;
+		if (ev.target.isActive) {
+			selectedCounties.delete(data.id);	
+		} else if (data.id != "IE") {
+			selectedCounties.add(data.id);
+		}
+		ev.target.isActive = !ev.target.isActive
+		console.log(selectedCounties);
 
-		extractVals(ev)
-
-		ev.target.isActive = !ev.target.isActive;
-
-		console.log(dataForChart)
-	})
+		let series1 = lineChart.series.push(new am4charts.LineSeries());
+		lineChart.data = dm.convertData(jsdata, "t", "S");
+		series1.dataFields.valueX = "x";
+		series1.dataFields.valueY = "y";
+		lineChart.invalidateData();
+	}
+		
 
 };

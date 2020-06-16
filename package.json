@@ -21,8 +21,10 @@
     "@amcharts/amcharts4": "^4.9.26",
     "@amcharts/amcharts4-fonts": "^4.0.1",
     "@amcharts/amcharts4-geodata": "^4.1.15",
+    "Math": "^0.0.1-security",
     "cross-env": "^7.0.2",
     "gh-pages": "^3.0.0",
+    "mathjs": "^7.0.1",
     "parcel-bundler": "^1.12.4"
   }
 }
