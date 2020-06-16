@@ -7,6 +7,7 @@ import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
 import * as jsdata from './data/UK.json';
 import * as dm from './dataMap.ts';
+import * as utils from './utils.ts';
 
 export function makeChart(label: string){
 	// Themes begin
@@ -163,11 +164,6 @@ export function makeChart(label: string){
 	//	var mydata = JSON.parse("./data/testingData.json");
 
 	//var graticuleSeries =  mapChart.series.push(new am4maps.GraticuleSeries());
-	let xAxis = lineChart.xAxes.push(new am4charts.ValueAxis());
-	xAxis.renderer.minGridDistance = 40;
-
-	// Create value axis
-	let yAxis = lineChart.yAxes.push(new am4charts.ValueAxis());
 
 	// Create series
 	//let series1 = lineChart.series.push(new am4charts.LineSeries());
@@ -183,6 +179,17 @@ export function makeChart(label: string){
 	//selectedAges.add("children");
 	var cacheCounties = new Set();
 	var cacheAges = new Set();
+
+	let xAxis = lineChart.xAxes.push(new am4charts.ValueAxis());
+	xAxis.renderer.minGridDistance = 40;
+
+	// Create value axis
+	let yAxis = lineChart.yAxes.push(new am4charts.ValueAxis());
+	lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), ["all"]);
+	var series1 = lineChart.series.push(new am4charts.LineSeries());
+	series1.dataFields.valueX = "x";
+	series1.dataFields.valueY = "y";
+
 
 	//////////////////////////////////////////////////
 	//Events
@@ -274,25 +281,18 @@ export function makeChart(label: string){
 	}
 		setInterval(function() {
 			console.log("checking for changes");
-			if !(eqSet(cacheCounties, selectedCounties) &&
-				eqSet(cacheAges, selectedAges)){
+			if !(utils.eqSet(cacheCounties, selectedCounties) &&
+				utils.eqSet(cacheAges, selectedAges)){
 				console.log("difference detected");
-				let series1 = lineChart.series.push(new am4charts.LineSeries());
 				lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), Array.from(selectedCounties));
-				series1.dataFields.valueX = "x";
-				series1.dataFields.valueY = "y";
-				lineChart.invalidateRawData();
+				lineChart.invalidateData();
 
-				cacheAges = selectedAges;
-				cacheCounties = selectedCounties;
+				cacheAges = new Set(selectedAges);
+				cacheCounties = new Set(selectedCounties);
 			}
 
 					}, 300);
 
 };
 
-function eqSet(as, bs) {
-    if (as.size !== bs.size) return false;
-    for (var a of as) if (!bs.has(a)) return false;
-    return true;
-}
+
