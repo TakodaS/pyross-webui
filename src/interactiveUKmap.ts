@@ -6,8 +6,8 @@ import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
 import * as jsdata from './data/UK.json';
-import * as dm from './dataMap.ts';
-import * as utils from './utils.ts';
+import * as dm from './dataMap';
+import * as utils from './utils';
 
 export function makeChart(label: string){
 	// Themes begin
@@ -194,7 +194,7 @@ export function makeChart(label: string){
 	//var total = totalValue();
 	var total = 0;
 	label.text = total;
-	label.align "center";
+	label.align = "center";
 	label.isMeasured = false;
 	//label.zIndex = 10;
 	//label.text = "0";
@@ -353,7 +353,7 @@ export function makeChart(label: string){
 		}
 		setInterval(function() {
 			console.log("checking for changes");
-			if !(utils.eqSet(cacheCounties, selectedCounties) &&
+			if !((utils.eqSet(cacheCounties, selectedCounties)) &&
 				utils.eqSet(cacheAges, selectedAges)){
 				console.log("difference detected");
 				lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), Array.from(selectedCounties));
