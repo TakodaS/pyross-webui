@@ -2,14 +2,29 @@
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4maps from "@amcharts/amcharts4/maps";
 import * as am4charts from "@amcharts/amcharts4/charts";
-import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
+//import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
 import * as jsdata from './data/UK.json';
 import * as dm from './dataMap.ts';
 import * as utils from './utils.ts';
 
-export function makeChart(label: string){
+function allCountiesAreActive(): Boolean {
+	let allActive = true;
+	polygonSeries.mapPolygons.each(function (mapPolygon) {
+		if (
+			(!mapPolygon.isActive) &&
+			(mapPolygon.dataItem.dataContext.id != "IE")) {
+			//	console.log("*******NOT ACTIVE*******", mapPVolygon,
+			//	console				"name:", mapPolygon.dataItem.dataContext.name,
+			//	console	"acive?", mapPolygon.isActive) 
+			allActive =
+				false;
+		}
+	}); return allActive;
+}
+
+//export function makeChart(label: string) {
 	// Themes begin
 	am4core.useTheme(am4themes_animated);
 	// Themes end
@@ -20,7 +35,7 @@ export function makeChart(label: string){
 	let container = am4core.create(label, am4core.Container)
 	container.width = am4core.percent(100);
 	container.height = am4core.percent(100);
-	let  mapChart= container.createChild(am4maps.MapChart);
+	let mapChart = container.createChild(am4maps.MapChart);
 
 	// zoomout on background click (seems broken)
 	//mapChart.chartContainer.background.events.on("hit", function () { zoomOut() });
@@ -35,28 +50,25 @@ export function makeChart(label: string){
 	// Set projection
 	mapChart.projection = new am4maps.projections.Miller();
 
-	// Create map polygon series
-	var polygonSeries =  mapChart.series.push(new am4maps.MapPolygonSeries());
-	polygonSeries.mapPolygons.template.strokeWidth = 0.5;
-
-	// Exclude Antartica
-	// polygonSeries.exclude = ["AQ"];
-
+	// Create map polygon series  (UK minus Ireland)
+	var polygonSeries = mapChart.series.push(new am4maps.MapPolygonSeries());
+	// Exclude Ireland
+	polygonSeries.exclude = ["IE"];
 	// Make map load polygon (like country names) data from GeoJSON
 	polygonSeries.useGeodata = true;
 
-	// Configure series
 	var polygonTemplate = polygonSeries.mapPolygons.template;
+	polygonTemplate.strokeWidth = 0.5;
 	polygonTemplate.tooltipText = "{name}";
-	polygonTemplate.fill =  mapChart.colors.getIndex(0);
+	polygonTemplate.fill = am4core.color("#E8CCBF");
 
 	// Create hover state and set alternative fill color
 	var hs = polygonTemplate.states.create("hover");
-	hs.properties.fill =  mapChart.colors.getIndex(2);
+	hs.properties.fill = mapChart.colors.getIndex(2);
 
 	// Create active state
 	var activeState = polygonTemplate.states.create("active");
-	activeState.properties.fill =  mapChart.colors.getIndex(4);
+	activeState.properties.fill = mapChart.colors.getIndex(4);
 
 	// Create highlight state and set alternative fill color (alias for hover)
 	// This is a duplicate of hover, but is needed because hover contains additional hidden logic
@@ -69,7 +81,42 @@ export function makeChart(label: string){
 	var aliasDefaultState = polygonTemplate.states.create("aliasDefault");
 	aliasDefaultState.properties.fill = mapChart.colors.getIndex(0);
 
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// Create map polygon series  (Ireland only)
+	var polygonSeriesIE = mapChart.series.push(new am4maps.MapPolygonSeries());
+	// Include Ireland Only
+	polygonSeriesIE.include = ["IE"];
+	// Make map load polygon (like country names) data from GeoJSON
+	polygonSeriesIE.useGeodata = true;
+	var PolygonTemplateIE = polygonSeriesIE.mapPolygons.template;
+	PolygonTemplateIE.strokeWidth = 0.5;
+	PolygonTemplateIE.tooltipText = "{name}";
+	PolygonTemplateIE.fill = am4core.color("#99C78F");  //green :)
+	PolygonTemplateIE.fillOpacity = 0.3
 
+	// Create hover state and set alternative fill color
+	var hs = PolygonTemplateIE.states.create("hover");
+	hs.properties.fill = mapChart.colors.getIndex(2);
+
+	// Create active state
+	var activeState = PolygonTemplateIE.states.create("active");
+	activeState.properties.fill = mapChart.colors.getIndex(4);
+
+	// Create highlight state and set alternative fill color (alias for hover)
+	// This is a duplicate of hover, but is needed because hover contains additional hidden logic
+	var highlightState = PolygonTemplateIE.states.create("highlight");
+	highlightState.properties.fill = mapChart.colors.getIndex(2);
+
+	var aliasActiveState = PolygonTemplateIE.states.create("aliasActive");
+	aliasActiveState.properties.fill = mapChart.colors.getIndex(4);
+
+	var aliasDefaultState = PolygonTemplateIE.states.create("aliasDefault");
+	aliasDefaultState.properties.fill = mapChart.colors.getIndex(0);
+
+	
+	////////////////////////////////////////////////////////////////////////////
+	// Small Map
+	//
 	//Small map to toggle features
 	mapChart.smallMap = new am4maps.SmallMap();
 	mapChart.smallMap.series.push(polygonSeries);
@@ -77,29 +124,7 @@ export function makeChart(label: string){
 	// Disable pan and zoom comtrols
 	mapChart.smallMap.draggable = false;
 	mapChart.smallMap.resizable = false;
-	mapChart.smallMap.maxZoomLevel = 1;
 	mapChart.smallMap.rectangle.strokeWidth = 0;
-	//mapChart.smallMap.tooltipText = "UK";
-	// mapChart.smallMap.create("hover");
-	//mapChart.smallMap.properties.fill = am4core.color("#ffffff");
-	//mapChart.smallMap.togglable = true;
-	//mapChart.smallMap.events.disable();
-
-	// Create a custom state
-	var disabledState = polygonTemplate.states.create("disabled");
-	disabledState.properties.fill = am4core.color("#001");
-	disabledState.properties.fillOpacity = .2;
-	disabledState.properties.shiftRadius = 0;
-	disabledState.properties.scale = 1;
-	disabledState.properties.hoverable = false;
-	disabledState.properties.clickable = false;
-
-	polygonSeries.mapPolygons.template.adapter.add("tooltipText", function(text, target) {
-		if (target.dataItem.dataContext.id == "IE") {
-			return "";
-		}
-		return text;
-	});
 
 	var smallSeries = mapChart.smallMap.series.getIndex(0);
 	var smallTemplate = smallSeries.mapPolygons.template;
@@ -108,16 +133,18 @@ export function makeChart(label: string){
 	smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
 	smallTemplate.polygon.fillOpacity = 1;
 
+	/////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////
 	let buttonsAndChartContainer = container.createChild(am4core.Container);
 	buttonsAndChartContainer.layout = "vertical";
 	var bccWidth = 30;
 	buttonsAndChartContainer.height = am4core.percent(100); // make this bigger if you want more space for the  mapChart
 	buttonsAndChartContainer.width = am4core.percent(bccWidth);
 	buttonsAndChartContainer.valign = "bottom";
-	buttonsAndChartContainer.x = am4core.percent(100-bccWidth);
+	buttonsAndChartContainer.x = am4core.percent(100 - bccWidth);
 	buttonsAndChartContainer.verticalCenter = "top";
 	// Chart & slider container
-	let  mapChartAndSliderContainer = buttonsAndChartContainer.createChild(am4core.Container);
+	let mapChartAndSliderContainer = buttonsAndChartContainer.createChild(am4core.Container);
 	mapChartAndSliderContainer.layout = "vertical";
 	mapChartAndSliderContainer.height = am4core.percent(25);
 	mapChartAndSliderContainer.width = am4core.percent(100);
@@ -239,7 +266,7 @@ export function makeChart(label: string){
 	//Line charts
 	//////////////////////////////////////////////////////////////////////
 
-	let lineChart =  mapChartAndSliderContainer.createChild(am4charts.XYChart);
+	let lineChart = mapChartAndSliderContainer.createChild(am4charts.XYChart);
 	//lineChart.height = am4core.percent(25);
 	lineChart.responsive.enabled = true;
 	lineChart.height = 250
@@ -296,69 +323,53 @@ export function makeChart(label: string){
 	// Create an event to toggle "active" state
 
 
-	polygonTemplate.events.on("hit", function(ev) {
-		var data = ev.target.dataItem.dataContext;
-		if (ev.target.isActive) {
-			selectedCounties.delete(data.id);	
-		} else if (data.id != "IE") {
-			selectedCounties.add(data.id);
-		}
-		ev.target.isActive = !ev.target.isActive
-		console.log(selectedCounties);
-		// slow, want to wait a second before updating. 
+polygonTemplate.events.on("hit", function (ev) {
+	var data = ev.target.dataItem.dataContext;
+	if (ev.target.isActive) {
+		selectedCounties.delete(data.id);
+	} else if (data.id != "IE") {
+		selectedCounties.add(data.id);
 	}
+	ev.target.isActive = !ev.target.isActive
+	console.log(selectedCounties);
+	// slow, want to wait a second before updating. 
+})
+		
+	// If any county is already selected, select all counties. If all are selected, deselect all
+	mapChart.smallMap.events.on("hit", function (ev) {
+		mapChart.goHome();    //Big map does not move when smallMap is clicked on
+		if (allCountiesAreActive()) {
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				mapPolygon.dispatchImmediately("hit")
+			})
+		} else if (atLeastOneCountyIsActive()) {
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				if (!mapPolygon.isActive) {
+					//mapPolygon.dispatch("hit")
+					mapPolygon.dispatchImmediately("hit");
+				}
+				mapPolygon.setState("aliasActive");
+			})
+		} else {   //All counties are inactive
+			polygonSeries.mapPolygons.each(function (mapPolygon) {
+				mapPolygon.dispatchImmediately("hit")
+			})
+		}
+		setSmallMapColor();
+	}) //end hit
 
-		//Disable Ireland
-		var ireland;
-		mapChart.events.on("ready", function (ev) {
-			ireland = polygonSeries.getPolygonById("IE");
-			//console.log("ireland:", ireland);
-			ireland.setState("disabled");
-			//ireland.interactionsEnabled = false;
-			//ireland.events.disable();
-		});
 
-
-		//////////////////////////////////////////
-		// smallMap events 
-
-		//If any county is already selected, select all counties. If all are selected, deselect all.
-		mapChart.smallMap.events.on("hit", function (ev) {
-			mapChart.goHome();    //Big map does not move when smallMap is clicked on
+		function setSmallMapColor():void {
 			if (allCountiesAreActive()) {
-				polygonSeries.mapPolygons.each(function (mapPolygon) {
-					mapPolygon.dispatchImmediately("hit")
-				})
-			} else if (atLeastOneCountyIsActive()) {
-				polygonSeries.mapPolygons.each(function (mapPolygon) {
-					if (!mapPolygon.isActive) {
-						//mapPolygon.dispatch("hit")
-						mapPolygon.dispatchImmediately("hit");
-					}
-					mapPolygon.setState("aliasActive");
-				})
-			} else {   //All counties are inactive
-				polygonSeries.mapPolygons.each(function (mapPolygon) {
-					mapPolygon.dispatchImmediately("hit")
-				})
-			}
-			setSmallMapColor();
-			ireland.setState("disabled");
-		}) //end hit
-
-
-		function setSmallMapColor() {
-			if (allCountiesAreActive()) {
-				smallTemplate.polygon.fill = mapChart.colors.getIndex(0); 
+				smallTemplate.polygon.fill = mapChart.colors.getIndex(0);
 			} else {
 				smallTemplate.polygon.fill = mapChart.colors.getIndex(4);
 			}
-			ireland.setState("disabled");
 		}
 
 		////////////////////////////
 		// Using 2 separate functions for clarity
-		function atLeastOneCountyIsActive() {
+		function atLeastOneCountyIsActive(): Boolean {
 			let oneActive = false;
 			polygonSeries.mapPolygons.each(function (mapPolygon) {
 				if (mapPolygon.isActive) {
@@ -368,30 +379,22 @@ export function makeChart(label: string){
 			return oneActive;
 		}
 
-		function allCountiesAreActive() { let allActive = true;
-			polygonSeries.mapPolygons.each(function (mapPolygon) { if (
-				(!mapPolygon.isActive) &&
-				(mapPolygon.dataItem.dataContext.id != "IE")) {
-				//	console.log("*******NOT ACTIVE*******", mapPVolygon,
-				//	console				"name:", mapPolygon.dataItem.dataContext.name,
-				//	console	"acive?", mapPolygon.isActive) 
-				allActive =
-					false; } }); return allActive; 
-		}
-		setInterval(function() {
-			console.log("checking for changes");
-			if !(utils.eqSet(cacheCounties, selectedCounties) &&
-				utils.eqSet(cacheAges, selectedAges)){
-				console.log("difference detected");
-				lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), Array.from(selectedCounties));
-				lineChart.invalidateData();
 
-				cacheAges = new Set(selectedAges);
-				cacheCounties = new Set(selectedCounties);
-			}
 
-		}, 300);
+		// setInterval(function() {
+		// 	console.log("checking for changes");
+		// 	if (!(utils.eqSet(cacheCounties, selectedCounties)) &&
+		// 		utils.eqSet(cacheAges, selectedAges)){
+		// 		console.log("difference detected");
+		// 		lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), Array.from(selectedCounties));
+		// 		lineChart.invalidateData();
 
-};
+		// 		cacheAges = new Set(selectedAges);
+		// 		cacheCounties = new Set(selectedCounties);
+		// 	}
+
+		// }, 300); 
+
+
 
 
