@@ -16,7 +16,6 @@ export function UKmap(container: am4core.Container, selectedCounties: Set){
 	mapChart.maxZoomLevel = 1;
 	// Set map definition
 	mapChart.geodata = am4geodata_ukCountiesHigh;
-	//console.log(mapChart.geodata)
 	// Set projection
 	mapChart.projection = new am4maps.projections.Miller();
 
@@ -101,7 +100,6 @@ export function UKmap(container: am4core.Container, selectedCounties: Set){
 			selectedCounties.add(data.id);
 		}
 		ev.target.isActive = !ev.target.isActive
-		console.log(selectedCounties);
 		// slow, want to wait a second before updating. 
 	}
 
@@ -109,11 +107,8 @@ export function UKmap(container: am4core.Container, selectedCounties: Set){
 		var ireland;
 		mapChart.events.on("ready", function (ev) {
 			ireland = polygonSeries.getPolygonById("IE");
-			//console.log("ireland:", ireland);
 			ireland.setState("disabled");
-			//ireland.interactionsEnabled = false;
-			//ireland.events.disable();
-		});
+				});
 
 
 		mapChart.smallMap.events.on("hit", function (ev) {
@@ -165,9 +160,6 @@ export function UKmap(container: am4core.Container, selectedCounties: Set){
 			polygonSeries.mapPolygons.each(function (mapPolygon) { if (
 				(!mapPolygon.isActive) &&
 				(mapPolygon.dataItem.dataContext.id != "IE")) {
-				//	console.log("*******NOT ACTIVE*******", mapPVolygon,
-				//	console				"name:", mapPolygon.dataItem.dataContext.name,
-				//	console	"acive?", mapPolygon.isActive) 
 				allActive =
 					false; } }); return allActive; 
 		}
@@ -179,7 +171,7 @@ export function pieChart(container: am4core.Container, selectedAges: Set){
 	let pieChart = container.createChild(am4charts.PieChart);
 	pieChart.hiddenState.properties.opacity = 0; // this creates initial fade-in
 	pieChart.seriesContainer.zIndex = -1;
-	pieChart.width = am4core.percent(20);
+	pieChart.width = am4core.percent(40);
 	pieChart.height = am4core.percent(100);
 	pieChart.y = am4core.percent(-30);
 	let series = pieChart.series.push(new am4charts.PieSeries());

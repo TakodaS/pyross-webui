@@ -23,43 +23,31 @@ export function makeChart(label: string){
 
 
 	////////////////////////////////////////////////////////////// 
-	// Create map instance
+	// Create containers 
 	////////////////////////////////////////////////////////////// 
 	let container = am4core.create(label, am4core.Container)
 	container.width = am4core.percent(100);
 	container.height = am4core.percent(100);
-	let mapChart = ui.UKmap(container, selectedCounties);
+	container.layout = "horizontal";
+	let UIcontainer = container.createChild(am4core.Container);
+	let UIwidth = 50;
+	UIcontainer.width = am4core.percent(UIwidth);
+	UIcontainer.height = am4core.percent(100);
+	let outputContainer = container.createChild(am4core.Container);
+	outputContainer.width = am4core.percent(100-UIwidth);
+	outputContainer.height = am4core.percent(100);
 
-	let buttonsAndChartContainer = container.createChild(am4core.Container);
-	buttonsAndChartContainer.layout = "vertical";
-	var bccWidth = 30;
-	buttonsAndChartContainer.height = am4core.percent(100); // make this bigger if you want more space for the  mapChart
-	buttonsAndChartContainer.width = am4core.percent(bccWidth);
-	buttonsAndChartContainer.valign = "bottom";
-	buttonsAndChartContainer.x = am4core.percent(100-bccWidth);
-	buttonsAndChartContainer.verticalCenter = "top";
-	// Chart & slider container
-	let  mapChartAndSliderContainer = buttonsAndChartContainer.createChild(am4core.Container);
-	mapChartAndSliderContainer.layout = "vertical";
-	mapChartAndSliderContainer.height = am4core.percent(25);
-	mapChartAndSliderContainer.width = am4core.percent(100);
-	mapChartAndSliderContainer.background = new am4core.RoundedRectangle();
-	//mapChartAndSliderContainer.background.fill = am4core.color("#000000");
-	mapChartAndSliderContainer.background.cornerRadius(30, 0, 30, 30)
-	mapChartAndSliderContainer.background.fillOpacity = 0.1;
-	mapChartAndSliderContainer.paddingTop = 12;
-	mapChartAndSliderContainer.paddingBottom = 0;
-	///////////////////////////////////////////////////////////////////////
-	//Pie chart
-	//////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////
+	//UUI charts
+	let mapChart = ui.UKmap(UIcontainer, selectedCounties);
 	let pieChart = ui.pieChart(mapChart , selectedAges);
 
 	pieChart.data = dm.getAgeData(jsdata, 100);
 	///////////////////////////////////////////////////////////////////////
-	//Line charts
+	//Output charts
 	//////////////////////////////////////////////////////////////////////
 
-	let lineChart =  mapChartAndSliderContainer.createChild(am4charts.XYChart);
+	let lineChart = outputContainer.createChild(am4charts.XYChart);
 	//lineChart.height = am4core.percent(25);
 	lineChart.responsive.enabled = true;
 	lineChart.height = 250
