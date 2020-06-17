@@ -130,30 +130,31 @@ export function makeChart(label: string){
 	///////////////////////////////////////////////////////////////////////
 	//Pie chart
 	//////////////////////////////////////////////////////////////////////
-	let pieChart = mapChartAndSliderContainer.createChild(am4charts.PieChart);
+	let pieChart = mapChart.createChild(am4charts.PieChart);
 	pieChart.hiddenState.properties.opacity = 0; // this creates initial fade-in
 	pieChart.seriesContainer.zIndex = -1;
 	pieChart.data = dm.getAgeData(jsdata, 100);
-	console.log(pieChart.data);
-
+	pieChart.width = am4core.percent(20);
+	pieChart.height = am4core.percent(100);
+	pieChart.y = am4core.percent(-30);
 	var series = pieChart.series.push(new am4charts.PieSeries());
 	series.dataFields.value = "value";
 	//series.dataFields.radiusValue = "value";
 	series.dataFields.category = "ageRange";
 	series.slices.template.cornerRadius = 6;
 	series.colors.step = 3;
-	pieChart.innerRadius = am4core.percent(0);
+	pieChart.innerRadius = am4core.percent(5);
 
 	series.hiddenState.properties.endAngle = -90;
 
 	series.labels.template.text = "{ageRange}";
 	series.slices.template.tooltipText = "{value}";
 
-	let as = series.slices.template.states.getKey("active");
-	as.properties.shiftRadius = 0.4;
-	as.properties.strokeWidth = 2;
-	as.properties.strokeOpacity = 1;
-	as.properties.fillOpacity = 1;
+	let as1 = series.slices.template.states.getKey("active");
+	as1.properties.shiftRadius = 0.4;
+	as1.properties.strokeWidth = 2;
+	as1.properties.strokeOpacity = 1;
+	as1.properties.fillOpacity = 1;
 
 	// Put a thick border around each Slice
 	series.slices.template.stroke = am4core.color("#4a2abb");
@@ -187,23 +188,20 @@ export function makeChart(label: string){
 	//pieChart.legend = new am4charts.Legend();
 
 	//Label: total of selected slices
-	var container = new am4core.Container();
-	container.parent = series;
-	container.horizontalCenter = "middle";
-	container.verticalCenter = "middle";
-	container.width = am4core.percent(1) / Math.sqrt(2);
-	container.fill = "white";
-	//container.zIndex = -1;
 
 	var label = new am4core.Label();
-	label.parent = container;
+	label.parent = series;
 	//var total = totalValue();
 	var total = 0;
 	label.text = total;
-
+	label.align "center";
+	label.isMeasured = false;
+	//label.zIndex = 10;
 	//label.text = "0";
 	label.horizontalCenter = "middle";
 	label.verticalCenter = "middle";
+	//label.x = pieChart.x;
+	//label.y = pieChart.y;
 	label.fontSize = 15;
 	label.fontFamily = "Times";
 	label.fontWeight = "bold";
@@ -232,7 +230,7 @@ export function makeChart(label: string){
 
 	///////////////////////////////////
 	//Propogate hover and hit events on a label to the underlying slice
-	series.labels.template.events.on("over", function (ev) {
+	series.labels.template.events.on("hit", function (ev) {
 		let parentSlice = ev.target._dataItem._slice;
 		parentSlice.dispatchImmediately("hit");
 	});
