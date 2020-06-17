@@ -206,34 +206,7 @@ export function makeChart(label: string){
 	label.fontFamily = "Times";
 	label.fontWeight = "bold";
 
-	// Add or subtract slices value from total value
-	series.slices.template.events.on("hit", function (ev) {
-		let data = ev.target.dataItem.dataContext;
-		let hitValue = data.value;
-		if (!ev.target.isActive) {
-			total = total - hitValue;
-		} else {
-			total = total + hitValue;
-		}
-		label.text = total;
-	}); // end event hit
 
-	//Find total of all slices   {values.value.sum}
-	// function totalValue() {
-	//   tVal = 0;
-	//   let arr = series.dataProvider._data;
-	//   for (i = 0; i < arr.length; i++) {
-	//     tVal = tVal + arr[i].value;
-	//   }
-	//   return tVal;
-	// }
-
-	///////////////////////////////////
-	//Propogate hover and hit events on a label to the underlying slice
-	series.labels.template.events.on("hit", function (ev) {
-		let parentSlice = ev.target._dataItem._slice;
-		parentSlice.dispatchImmediately("hit");
-	});
 
 	///////////////////////////////////////////////////////////////////////
 	//Line charts
@@ -391,6 +364,36 @@ export function makeChart(label: string){
 			}
 
 		}, 300);
+		// Add or subtract slices value from total value
+		series.slices.template.events.on("hit", function (ev) {
+			let data = ev.target.dataItem.dataContext;
+			let hitValue = data.value;
+			if (!ev.target.isActive) {
+				total = total - hitValue;
+				selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
+			} else {
+				total = total + hitValue;
+				selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
+			}
+			label.text = total;
+		}); // end event hit
+
+		//Find total of all slices   {values.value.sum}
+		// function totalValue() {
+		//   tVal = 0;
+		//   let arr = series.dataProvider._data;
+		//   for (i = 0; i < arr.length; i++) {
+		//     tVal = tVal + arr[i].value;
+		//   }
+		//   return tVal;
+		// }
+
+		///////////////////////////////////
+		//Propogate hover and hit events on a label to the underlying slice
+		series.labels.template.events.on("hit", function (ev) {
+			let parentSlice = ev.target._dataItem._slice;
+			parentSlice.dispatchImmediately("hit");
+		});
 
 };
 

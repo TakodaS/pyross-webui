@@ -26,8 +26,12 @@ function combinedData(data, xval, yval, ages=["children"], regions=["GB-CM"]){
 		regions=Object.keys(data)
 		regions.pop(); //remove "default" KEYVALUE
 	}
+	if utils.arraysEqual(ages, ["all"]){
+		ages=["children", "Adults"]; //Needs to be fixed
+	}
 	for (var county of regions){
 		for (var age of ages){
+			console.log(age);
 			try {
 			datRA = data[county][age];
 			xvals = data[county][xval];
@@ -62,6 +66,7 @@ export function convertData(data, xval, yval, ages=[], regions=[]){
 		regions=["all"]
 	}
 	var dataForChart = [];
+	console.log(ages);
 	var data = combinedData(data, xval, yval, ages, regions);
 	var xvals = data[0];
 	var yvals = data[1];
