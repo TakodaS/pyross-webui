@@ -27,9 +27,10 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
   polygonSeries.useGeodata = true;
 
   ////////// COLORS
-  var inactiveColor = am4core.color("tan"); //default
-  var activeColor = am4core.color("green");
+  var inactiveColor = am4core.color("#A3C1AD"); //Cambidge Blue!
+  var activeColor = am4core.color("#002147");  //Oxford Blue
   var highlightColor = am4core.color("yellow");
+  var highlightStrokeColor = am4core.color("black");
 
   var polygonTemplate = polygonSeries.mapPolygons.template;
   polygonTemplate.strokeWidth = 0.5;
@@ -46,14 +47,25 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
 
   // Create highlight state and set alternative fill color (alias for hover)
   // This is a duplicate of hover, but is needed because hover contains additional hidden logic
+  //These are all custom states.
   var highlightState = polygonTemplate.states.create("highlight");
-	highlightState.properties.fill = highlightColor;
+  //highlightState.properties.fill = highlightColor;
+  highlightState.properties.fillOpacity = 0.6;
+  highlightState.properties.stroke = highlightStrokeColor;
+  highlightState.properties.strokeWidth = 3;
 
   var aliasActiveState = polygonTemplate.states.create("aliasActive");
-	aliasActiveState.properties.fill = activeColor;
-
+  aliasActiveState.properties.fill = activeColor;
+  aliasActiveState.properties.fillOpacity = 1;
+  aliasActiveState.properties.stroke = am4core.color("white");
+  aliasActiveState.properties.strokeWidth = 1;
+  
   var aliasDefaultState = polygonTemplate.states.create("aliasDefault");
-	aliasDefaultState.properties.fill = inactiveColor;
+  aliasDefaultState.properties.fill = inactiveColor;
+  aliasDefaultState.properties.fillOpacity = 1;
+  aliasDefaultState.properties.stroke = am4core.color("white");
+  aliasDefaultState.properties.strokeWidth = 1;
+    
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
   // Create map polygon series  (Ireland only)
@@ -103,24 +115,25 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
       selectedCounties.delete(data.id);
       mappoly.setState("aliasDefault");
     }
-	  checkIfAllCountriesAreSame();
+	  checkIfAllCountiesAreSame();
   });
 	
-	// polygonTemplate.events.on("over", function (ev) {
-  //    let mappoly = ev.target;
-  //    mappoly.setState("highlight");
-	// });
+	polygonTemplate.events.on("over", function (ev) {
+     let mappoly = ev.target;
+     mappoly.setState("highlight");
+	});
 
 	polygonTemplate.events.on("out", function (ev) {
 		let mappoly = ev.target;
 		if (mappoly.isActive) {
 			mappoly.setState("aliasActive");
 		} else {
-        	mappoly.setState("aliasDefault");
-      }
-    });
+      mappoly.setState("aliasDefault");
+    } 
+  })
+  
 
-  // Set active status (and therefore color) of the counties to be the same as smallMap.  Toggle smallMap color.
+  // Set active status (and therefore color) of the BIG MAP to be the same as smallMap.  Toggle smallMap color.
   mapChart.smallMap.events.on("hit", function (ev) {
     mapChart.goHome(); //Big map does not move when smallMap is clicked on
     if (getSmallMapColor() == activeColor) {
@@ -136,7 +149,7 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
         if (mapPolygon.isActive) {
           mapPolygon.dispatchImmediately("hit");
         }
-      });
+      })
 	}
 	//smallMapColorToggle();
   }); //end hit
@@ -191,7 +204,7 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
     }
   }
 	
-	function checkIfAllCountriesAreSame():void {
+	function checkIfAllCountiesAreSame():void {
 		let allActive = true;
 		let allInactive = true;
 		let smcolor = getSmallMapColor();
