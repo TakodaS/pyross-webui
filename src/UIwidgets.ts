@@ -11,13 +11,14 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
   let mapChart = container.createChild(am4maps.MapChart);
   mapChart.width = am4core.percent(50);
   mapChart.height = am4core.percent(100);
-  mapChart.seriesContainer.draggable = false;
-  mapChart.seriesContainer.resizable = false;
-  mapChart.maxZoomLevel = 1;
+  //mapChart.seriesContainer.draggable = false;
+  //mapChart.seriesContainer.resizable = false;
+  //mapChart.maxZoomLevel = 1;
   // Set map definition
   mapChart.geodata = am4geodata_ukCountiesHigh;
   // Set projection
   mapChart.projection = new am4maps.projections.Miller();
+  mapChart.scale = 1;
 
   // Create map polygon series  (UK minus Ireland)
   var polygonSeries = mapChart.series.push(new am4maps.MapPolygonSeries());
@@ -25,6 +26,7 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
   polygonSeries.exclude = ["IE"];
   // Make map load polygon (like country names) data from GeoJSON
   polygonSeries.useGeodata = true;
+  //polygonSeries.zoom = 0.4;
 
   ////////// COLORS
   var inactiveColor = am4core.color("#A3C1AD"); //Cambidge Blue!
@@ -36,6 +38,7 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
   polygonTemplate.strokeWidth = 0.5;
   polygonTemplate.tooltipText = "{name}";
   polygonTemplate.fill = inactiveColor;
+
 
   // Create hover state and set alternative fill color
   //   var hs = polygonTemplate.states.create("hover");
@@ -91,6 +94,7 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
   mapChart.smallMap.draggable = false;
   mapChart.smallMap.resizable = false;
   mapChart.smallMap.rectangle.strokeWidth = 0;
+  mapChart.smallMap.scale = 1;
 
   var smallSeries = mapChart.smallMap.series.getIndex(0);
   var smallTemplate = smallSeries.mapPolygons.template;
@@ -220,7 +224,25 @@ export function UKmap(container: am4core.Container, selectedCounties: Set) {
 		} else if (smcolor == inactiveColor && allInactive) {
 			setSmallMapColor(activeColor);
 		}
-	})
+  })
+  
+  /////////Add Map Control Buttons////////
+  // Add zoom control
+  mapChart.zoomControl = new am4maps.ZoomControl();
+  mapChart.zoomControl.scale = 1;
+
+  // Add button
+  var button = mapChart.chartContainer.createChild(am4core.Button);
+  button.padding(5, 5, 5, 5);
+  button.align = "right";
+  button.marginRight = 15;
+  button.events.on("hit", function() {
+    mapChart.goHome();
+  });
+
+  button.icon = new am4core.Sprite();
+  button.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
+  
 
   return mapChart;
 } //end export ukMap
