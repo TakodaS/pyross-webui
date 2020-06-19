@@ -25,29 +25,29 @@ export function makeChart(label: string){
 	////////////////////////////////////////////////////////////// 
 	// Create containers 
 	////////////////////////////////////////////////////////////// 
-	let container = am4core.create(label, am4core.Container)
-	container.width = am4core.percent(100);
-	container.height = am4core.percent(100);
-	container.layout = "horizontal";
-	let UIcontainer = container.createChild(am4core.Container);
-	let UIwidth = 50;
-	UIcontainer.width = am4core.percent(UIwidth);
-	UIcontainer.height = am4core.percent(100);
-	let outputContainer = container.createChild(am4core.Container);
-	outputContainer.width = am4core.percent(100-UIwidth);
-	outputContainer.height = am4core.percent(100);
+	//let container = am4core.create(label, am4core.Container)
+	//container.width = am4core.percent(100);
+	//container.height = am4core.percent(100);
+	//container.layout = "horizontal";
+	//let UIcontainer = container.createChild(am4core.Container);
+	//let UIwidth = 50;
+	//UIcontainer.width = am4core.percent(UIwidth);
+	//UIcontainer.height = am4core.percent(100);
+	//let outputContainer = container.createChild(am4core.Container);
+	//outputContainer.width = am4core.percent(100-UIwidth);
+	//outputContainer.height = am4core.percent(100);
 
 	////////////////////////////////////////////////////
 	//UUI charts
-	let mapChart = ui.UKmap(UIcontainer, selectedCounties);
-	let pieChart = ui.pieChart(mapChart , selectedAges);
+	let mapChart = ui.UKmap("mapchart", selectedCounties);
+	let pieChart = ui.pieChart("piechart" , selectedAges);
 
 	pieChart.data = dm.getAgeData(jsdata, 100);
 	///////////////////////////////////////////////////////////////////////
 	//Output charts
 	//////////////////////////////////////////////////////////////////////
 
-	let lineChart = outputContainer.createChild(am4charts.XYChart);
+	let lineChart = am4core.create("linechart", am4charts.XYChart);
 	//lineChart.height = am4core.percent(25);
 	lineChart.responsive.enabled = true;
 	lineChart.height = 250

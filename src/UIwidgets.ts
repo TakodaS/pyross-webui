@@ -7,8 +7,8 @@ import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHig
 import * as dm from './dataMap';
 import * as utils from './utils';
 
-export function UKmap(container: am4core.Container, selectedCounties: Set){
-	let mapChart = container.createChild(am4maps.MapChart);
+export function UKmap(label: string, selectedCounties: Set){
+	let mapChart = am4core.create(label, am4maps.MapChart);
 	mapChart.width = am4core.percent(50);
 	mapChart.height = am4core.percent(100);
 	mapChart.seriesContainer.draggable = false;
@@ -167,8 +167,8 @@ export function UKmap(container: am4core.Container, selectedCounties: Set){
 		return mapChart;
 	};
 
-export function pieChart(container: am4core.Container, selectedAges: Set){	
-	let pieChart = container.createChild(am4charts.PieChart);
+export function pieChart(label: string, selectedAges: Set){	
+	let pieChart = am4core.create(label, am4charts.PieChart);
 	pieChart.hiddenState.properties.opacity = 0; // this creates initial fade-in
 	pieChart.seriesContainer.zIndex = -1;
 	pieChart.width = am4core.percent(40);
