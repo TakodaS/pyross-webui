@@ -79,10 +79,10 @@ export function makeChart(label: string){
 	//Events
 	////////////////////////////////////////////////////
 		setInterval(function() {
-			console.log("checking for changes");
-			if !((utils.eqSet(cacheCounties, selectedCounties)) &&
-				utils.eqSet(cacheAges, selectedAges)){
-				console.log("difference detected");
+			//console.log("checking for changes");
+			if ( !(utils.eqSet(cacheCounties, selectedCounties))  &&
+				utils.eqSet(cacheAges, selectedAges) )  {
+				//console.log("difference detected");
 				lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), Array.from(selectedCounties));
 				lineChart.invalidateData();
 
