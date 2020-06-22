@@ -1,0 +1,3 @@
+
+A cookie is created from one of the amcharts libraries. Take it out.
+
