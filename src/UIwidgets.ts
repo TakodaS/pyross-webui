@@ -7,8 +7,9 @@ import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHig
 import * as dm from "./dataMap";
 import * as utils from "./utils";
 
+
 export function UKmap(label: string, selectedCounties: Set) {
-  let mapChart = am4core.create(label, am4maps.MapChart);
+  var mapChart = am4core.create(label, am4maps.MapChart);
   mapChart.width = am4core.percent(50);
   mapChart.height = am4core.percent(100);
   //mapChart.seriesContainer.draggable = false;
