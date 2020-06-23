@@ -1,3 +1,12 @@
 
 A cookie is created from one of the amcharts libraries. Take it out.
 
+check if resolvejsonmodule compiler option is now in tsc -init
+How to check if compiler option works since once it is done, 
+even it you comment out the option, you have to also remove the created target file?
+
+Make sure new build picks up uNuglified core file (toggle amcharts original core as test)
+
+//Why do vars declared within methods not propogate to entire class?
+
+
