@@ -60,7 +60,6 @@ class mapOfUKWidget {
 
     initLargeMap(): void {
         this.mapChart = am4core.create("mapchart", am4maps.MapChart);
-        console.log("mapchart is", this.mapChart)
         //this.mapChart.width = am4core.percent(50);
         //this.mapChart.height = am4core.percent(100);
         this.mapChart.seriesContainer.draggable = false;
@@ -90,10 +89,10 @@ class mapOfUKWidget {
         this.polygonTemplate.strokeWidth = 0.5;
         this.polygonTemplate.tooltipText = "{name}";
         this.polygonTemplate.fill = this.inactiveColor;
-        console.log("polygon template type", this.polygonTemplate);
-            console.log("typeof", this.polygonTemplate.constructor.name);
-        console.log("polygon series type", this.polygonSeries);
-            console.log("typeof", this.polygonSeries.constructor.name);
+        // console.log("polygon template type", this.polygonTemplate);
+        // console.log("typeof", this.polygonTemplate.constructor.name);
+        // console.log("polygon series type", this.polygonSeries);
+        // console.log("typeof", this.polygonSeries.constructor.name);
         
         
     
@@ -172,13 +171,13 @@ class mapOfUKWidget {
     //Sprite.events: am4core.SpriteEventDispatcher<am4core.AMEvent<am4maps.MapPolygon, am4maps.IMapPolygonEvents>>
     setEvents(): void {
         //The following alias(S) are needed as the context of "this" within the event handlers is "undefined"!
-        let aliasCheckIfAllCountriesAreSame = this.checkIfAllCountiesAreSame;
-        let aliasMapChart = this.mapChart;
-        let aliasGetSmallMapColor = this.getSmallMapColor;
-        let aliasPolygonSeries = this.polygonSeries;
-        let aliasActiveColor = this.activeColor;
-        let aliasInactiveColor = this.inactiveColor;
-        let aliasThisContext = this;
+        // let aliasCheckIfAllCountriesAreSame = this.checkIfAllCountiesAreSame;
+        // let aliasMapChart = this.mapChart;
+        // let aliasGetSmallMapColor = this.getSmallMapColor;
+        // let aliasPolygonSeries = this.polygonSeries;
+        // let aliasActiveColor = this.activeColor;
+        // let aliasInactiveColor = this.inactiveColor;
+        // let aliasThisContext = this;
 
         this.polygonTemplate.events.on("hit", function (ev) {
             let mappoly = ev.target;
@@ -193,7 +192,7 @@ class mapOfUKWidget {
                 mappoly.setState("aliasDefault");
             }
             //aliasCheckIfAllCountriesAreSame();
-            aliasThisContext.checkIfAllCountiesAreSame();
+            holdClassThisContext.checkIfAllCountiesAreSame();
         });
 
         
@@ -230,56 +229,57 @@ class mapOfUKWidget {
 
         // Set active status (and therefore color) of the BIG MAP to be the same as smallMap.  Toggle smallMap color.
         this.mapChart.smallMap.events.on("hit", function (ev) {
-            aliasMapChart.goHome(); //Big map does not move when smallMap is clicked on
-            if (aliasGetSmallMapColor() == aliasActiveColor) {
+            holdClassThisContext.mapChart.goHome(); //Big map does not move when smallMap is clicked on
+            if (holdClassThisContext.getSmallMapColor() == holdClassThisContext.activeColor) {
             //make all counties active
-            aliasPolygonSeries.mapPolygons.each(function (mapPolygon) {
+            holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
                 if (!mapPolygon.isActive) {
                 mapPolygon.dispatchImmediately("hit");
                 }
             })
             } else {
-            //make all counties inative
-            aliasPolygonSeries.mapPolygons.each(function (mapPolygon) {
-                if (mapPolygon.isActive) {
-                mapPolygon.dispatchImmediately("hit");
-                }
-            })
+                //make all counties inative
+                holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
+                    if (mapPolygon.isActive) {
+                    mapPolygon.dispatchImmediately("hit");
+                    }
+                })
             }
             holdClassThisContext.smallMapColorToggle();
         })  //end hit smallMap
 
         // Hover has complicated hidden behaviours so use a simple custom "highlight" (only changes colour)
         this.mapChart.smallMap.events.on("over", function (event) {
-            let smcolor = aliasGetSmallMapColor();
-            if (smcolor == aliasInactiveColor) {
-                aliasPolygonSeries.mapPolygons.each(function (mapPolygon) {
+            let smcolor = holdClassThisContext.getSmallMapColor();
+            if (smcolor == holdClassThisContext.inactiveColor) {
+                holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
                     mapPolygon.setState("aliasDefault");
                 })
             } else {
-                aliasPolygonSeries.mapPolygons.each(function (mapPolygon) {
+                holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
                     mapPolygon.setState("aliasActive");
                 })
             }
             //polygonTemplate.tooltipText = "UK: [bold]{name}[/]";
-        })
+        });
 
         this.mapChart.smallMap.events.on("out", function (event) {
-            aliasPolygonSeries.mapPolygons.each(function (mapPolygon) {
-            if (mapPolygon.isActive) {
-                mapPolygon.setState("aliasActive");
-            } else {
-                mapPolygon.setState("aliasDefault");
-            }
+            holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
+                if (mapPolygon.isActive) {
+                    mapPolygon.setState("aliasActive");
+                } else {
+                    mapPolygon.setState("aliasDefault");
+                }
             })
-        })
+        });
 
     }; //end setEvents
 
+
+    // Event Helpers
     checkIfAllCountiesAreSame() {
         let allActive = true;
         let allInactive = true;
-        console.log("smallmapcolor", holdClassThisContext.getSmallMapColor());
         let smcolor: am4core.Color = holdClassThisContext.getSmallMapColor();
 
         holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
@@ -301,7 +301,7 @@ class mapOfUKWidget {
     setSmallMapColor(smcolor: am4core.Color): void {
         if ((smcolor == holdClassThisContext.inactiveColor)) {
             holdClassThisContext.smallTemplate.polygon.fill = holdClassThisContext.inactiveColor;
-        } else if ((smcolor == holdClassThisContext.activeColor)) {
+        } else {   //if ((smcolor == holdClassThisContext.activeColor)) {
             holdClassThisContext.smallTemplate.polygon.fill = holdClassThisContext.activeColor;
         }
     }
@@ -344,135 +344,6 @@ class mapOfUKWidget {
     
 
 } //end class mapOfUKWidget
-
-
-//////////////////////////////////////////////////
-    //Events
-    ////////////////////////////////////////////////////
-    // polygonTemplate.events.on("hit", function (ev) {
-    //     let mappoly = ev.target;
-    //     let data = mappoly.dataItem.dataContext;
-    //     let smallmapcolor = 1;
-    //     mappoly.isActive = !mappoly.isActive;
-    //     if (mappoly.isActive) {
-    //     selectedCounties.add(data.id);
-    //     mappoly.setState("aliasActive");
-    //     } else {
-    //     selectedCounties.delete(data.id);
-    //     mappoly.setState("aliasDefault");
-    //     }
-    //     checkIfAllCountiesAreSame();
-    // })
-        
-    // polygonTemplate.events.on("over", function (ev) {
-    //     let mappoly = ev.target;
-    //     mappoly.setState("highlight");
-    // });
-
-    // polygonTemplate.events.on("out", function (ev) {
-    //     let mappoly = ev.target;
-    //     if (mappoly.isActive) {
-    //         mappoly.setState("aliasActive");
-    //     } else {
-    //         mappoly.setState("aliasDefault");
-    //     } 
-    // })
-    
-
-    // // Set active status (and therefore color) of the BIG MAP to be the same as smallMap.  Toggle smallMap color.
-    // mapChart.smallMap.events.on("hit", function (ev) {
-    //     mapChart.goHome(); //Big map does not move when smallMap is clicked on
-    //     if (getSmallMapColor() == activeColor) {
-    //     //make all counties active
-    //     polygonSeries.mapPolygons.each(function (mapPolygon) {
-    //         if (!mapPolygon.isActive) {
-    //         mapPolygon.dispatchImmediately("hit");
-    //         }
-    //     })
-    //     } else {
-    //     //make all counties inative
-    //     polygonSeries.mapPolygons.each(function (mapPolygon) {
-    //         if (mapPolygon.isActive) {
-    //         mapPolygon.dispatchImmediately("hit");
-    //         }
-    //     })
-    //     }
-    //     //smallMapColorToggle();
-    // })  //end hit
-
-    // // Hover has complicated hidden behaviours so use a simple custom "highlight" (only changes colour)
-    // mapChart.smallMap.events.on("over", function (event) {
-    //     let smcolor = this.getSmallMapColor();
-    //     if (smcolor == inactiveColor) {
-    //         polygonSeries.mapPolygons.each(function (mapPolygon) {
-    //             mapPolygon.setState("aliasDefault");
-    //         })
-    //     } else {
-    //         polygonSeries.mapPolygons.each(function (mapPolygon) {
-    //             mapPolygon.setState("aliasActive");
-    //         })
-    //     }
-    //     //polygonTemplate.tooltipText = "UK: [bold]{name}[/]";
-    // })
-
-    // mapChart.smallMap.events.on("out", function (event) {
-    //     polygonSeries.mapPolygons.each(function (mapPolygon) {
-    //     if (mapPolygon.isActive) {
-    //         mapPolygon.setState("aliasActive");
-    //     } else {
-    //         mapPolygon.setState("aliasDefault");
-    //     }
-    //     });
-    // })
-    
-
-    // function setSmallMapColor(smcolor: am4core.Color): void {
-    //     if ((smcolor == inactiveColor)) {
-    //         smallTemplate.polygon.fill = inactiveColor;
-    //     } else if ((smcolor == activeColor)) {
-    //         smallTemplate.polygon.fill = activeColor;
-    //     }
-    // }
-
-    // function getSmallMapColor():am4core.Color {
-    //     if (smallTemplate.polygon.fill == inactiveColor) {
-    //     return inactiveColor;
-    //     } else {
-    //     return activeColor;
-    //     }
-    // }
-        
-    // function smallMapColorToggle():void {
-    //     if (this.getSmallMapColor() == inactiveColor) {
-    //         this.setSmallMapColor(activeColor);
-    //     } else  {
-    //         this.setSmallMapColor(inactiveColor);
-    //     }
-    // }
-        
-    // function checkIfAllCountiesAreSame():void {
-    //     let allActive = true;
-    //     let allInactive = true;
-    //     let smcolor = getSmallMapColor();
-
-    //     polygonSeries.mapPolygons.each(function (mapPolygon) {
-    //         if (mapPolygon.isActive) {
-    //             allInactive = false;
-    //         } else {
-    //             allActive = false;
-    //         }
-    //     }
-    //     if (smcolor == activeColor && allActive) {
-    //         this.setSmallMapColor(inactiveColor);
-    //     } else if (smcolor == inactiveColor && allInactive) {
-    //         this.setSmallMapColor(activeColor);
-    //     }
-    // })
-    
-        
-    // button.events.on("hit", function() {
-    //     mapChart.goHome();
-    // });
 
 
 
