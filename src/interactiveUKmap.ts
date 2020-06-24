@@ -47,7 +47,8 @@ export function makeChart(label: string){
 	//let mapChart = ui.UKmap("mapchart", selectedCounties);
 	var mc = new mapOfUKWidget();
 	let mapChart = mc.getUKMap();
-	console.log("mapChart is:", mapChart);
+	
+	//console.log("mapChart is:", mapChart)
 
 
 	// let pieChart = ui.pieChart("piechart" , selectedAges);

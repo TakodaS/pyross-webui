@@ -17,14 +17,14 @@ var holdClassThisContext: any;
 class mapOfUKWidget {
     //label: string;
     //selectedCounties: any;
-    mapChart: am4maps.MapChart;
-    polygonTemplate: am4maps.MapPolygon;
-    polygonSeries: am4maps.MapPolygonSeries;
-    inactiveColor: any;
-    activeColor: any;
-    highlightColor: any;
-    highlightStrokeColor: any;
-    smallTemplate: any;
+    private mapChart: am4maps.MapChart;
+    private polygonTemplate: am4maps.MapPolygon;
+    private polygonSeries: am4maps.MapPolygonSeries;
+    private inactiveColor: any;
+    private activeColor: any;
+    private highlightColor: any;
+    private highlightStrokeColor: any;
+    private smallTemplate: any;
 
     
     constructor() {
@@ -38,21 +38,34 @@ class mapOfUKWidget {
         //this.addControlButtons();
     }
 
-    // Public Interface
+    //////////////////////////////Public Interface////////////////////////////////////////
+    // 
+    //
     getUKMap(){
         return this.mapChart;
     }
+    //
+    // Getters
+    get selectedCounties(): Set {
+        return selectedCounties;
+    }
+    //
+    //
+    //////////////////////////////////////////////////////////////////////////////////////
 
-    // "Private" Interface...shouldn't be used by consumer
-    getThisContext(): void { holdClassThisContext = this };
 
-    initLargeMap(): void {
+
+    ///////////////////// Private Interface...not to be used by consumer
+    private getThisContext(): void { holdClassThisContext = this };
+
+    private initLargeMap(): void {
         this.mapChart = am4core.create("mapchart", am4maps.MapChart);
         //this.mapChart.width = am4core.percent(50);
         //this.mapChart.height = am4core.percent(100);
         this.mapChart.seriesContainer.draggable = false;
         this.mapChart.seriesContainer.resizable = false;
-        //mapChart.maxZoomLevel = 1;
+        this.mapChart.maxZoomLevel = 1;
+
         // Set map definition
         this.mapChart.geodata = am4geodata_ukCountiesHigh;
         // Set projection
@@ -124,7 +137,7 @@ class mapOfUKWidget {
 
     } // end initLargeMap
 
-    initSmallMap(): void {
+    private initSmallMap(): void {
         this.mapChart.smallMap = new am4maps.SmallMap();
         this.mapChart.smallMap.series.push(this.polygonSeries);
 
@@ -149,7 +162,7 @@ class mapOfUKWidget {
     ////////////////////////////////////////////////////
    // onClickGood = (e: Event) => { this.info = e.message }
     //Sprite.events: am4core.SpriteEventDispatcher<am4core.AMEvent<am4maps.MapPolygon, am4maps.IMapPolygonEvents>>
-    setEvents(): void {
+    private setEvents(): void {
         //The following alias(S) are needed as the context of "this" within the event handlers is "undefined"!
         // let aliasCheckIfAllCountriesAreSame = this.checkIfAllCountiesAreSame;
         // let aliasMapChart = this.mapChart;
@@ -258,7 +271,7 @@ class mapOfUKWidget {
 
 
     // Event Helpers
-    checkIfAllCountiesAreSame() {
+    private checkIfAllCountiesAreSame() {
         let allActive = true;
         let allInactive = true;
         let smcolor: am4core.Color = holdClassThisContext.getSmallMapColor();
@@ -279,7 +292,7 @@ class mapOfUKWidget {
     }) //end checkIfAllCountiesAreSame
 
 
-    setSmallMapColor(smcolor: am4core.Color): void {
+    private setSmallMapColor(smcolor: am4core.Color): void {
         if ((smcolor == holdClassThisContext.inactiveColor)) {
             holdClassThisContext.smallTemplate.polygon.fill = holdClassThisContext.inactiveColor;
         } else {   //if ((smcolor == holdClassThisContext.activeColor)) {
@@ -287,7 +300,7 @@ class mapOfUKWidget {
         }
     }
 
-    getSmallMapColor():am4core.Color {
+    private getSmallMapColor():am4core.Color {
         if (holdClassThisContext.smallTemplate.polygon.fill == holdClassThisContext.inactiveColor) {
             return holdClassThisContext.inactiveColor;
         } else {
@@ -295,7 +308,7 @@ class mapOfUKWidget {
         }
     }
         
-    smallMapColorToggle():void {
+    private smallMapColorToggle():void {
         if (holdClassThisContext.getSmallMapColor() == holdClassThisContext.inactiveColor) {
             holdClassThisContext.setSmallMapColor(holdClassThisContext.activeColor);
         } else  {
