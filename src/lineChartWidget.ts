@@ -16,22 +16,19 @@ var holdClassThisContext: any;
 
 
 class lineChartWidget {
-    private name: string;
-    //private selectedCounties: Set<number>;
-    private selectedAges: Set<string>;
-    private lineChart: am4charts.XYChart;
+    private _name: string;
+    private _selectedCounties: Set<number>;
+    private _selectedAges: Set<string>;
+    private _lineChart: am4charts.XYChart;
     private cacheCounties: Set<number>;
     private cacheAges: Set<string>;
 
-    // private series: am4charts.PieSeries;
-    // private label: am4core.Label = new am4core.Label();
-    // private total: number = 0;
-
-    constructor(name: string, selectedAges: Set<string>) {
-        this.name = name;
-        this.selectedAges = selectedAges;
+    constructor(name: string, selectedCounties: Set<number>, selectedAges: Set<string>) {
+        this._name = name;
+        this._selectedCounties = selectedCounties;
+        this._selectedAges = selectedAges;
         holdClassThisContext = this;
-        this.lineChart = am4core.create("linechart", am4charts.XYChart);
+        this._lineChart = am4core.create("linechart", am4charts.XYChart);
         this.cacheCounties = new Set();
         this.cacheAges = new Set();
         this.initLineChart();
@@ -41,30 +38,27 @@ class lineChartWidget {
     //////////////////////////////Public Interface////////////////////////////////////////
     // 
     //
-    getPieChart() {
-        return this.pieChart;
-    };
+    // Getters & Setters
+
+    public get lineChart(): am4charts.XYChart {
+        return this._lineChart;
+    }
+
+    public get selectedAges(): Set<string> {
+        return this._selectedAges;
+    }
+    public set selectedAges(value: Set<string>) {
+        this._selectedAges = value;
+    }
+
+    public get selectedCounties(): Set<number> {
+        return this._selectedCounties;
+    }
+    public set selectedCounties(value: Set<number>) {
+        this._selectedCounties = value;
+    }
 
     //
-    // Getters
-    get selectedCounties(): Set<number> {
-        return this.selectedCounties;
-    }
-    //
-    get selectedAges(): Set<string> {
-        return this.selectedAges;
-    };
-
-    // Setters
-    set selectedCounties(value: Set<string>) {
-        this.selectedCounties = value;
-    }
-    //
-    set selectedAges(value: Set<string>) {
-        this.selectedAges = value;
-    }
-    //
-   
     //
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -107,10 +101,11 @@ class lineChartWidget {
 
         setInterval(function() {
             //console.log("checking for changes");
-            if ( !(utils.eqSet(cacheCounties, selectedCounties))  &&
-                utils.eqSet(cacheAges, selectedAges) )  {
+            if ( !(utils.eqSet(holdClassThisContext.cacheCounties, holdClassThisContext.selectedCounties))  &&
+                utils.eqSet(holdClassThisContext.cacheAges, holdClassThisContext.selectedAges) )  {
                 //console.log("difference detected");
-                holdClassThisContext.lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(selectedAges), Array.from(selectedCounties));
+                holdClassThisContext.lineChart.data = dm.convertData(jsdata, "t", "S",
+                    Array.from(holdClassThisContext.selectedAges), Array.from(holdClassThisContext.selectedCounties));
                 holdClassThisContext.lineChart.invalidateData();
 
                 holdClassThisContext.cacheAges = new Set(holdClassThisContext.selectedAges);
