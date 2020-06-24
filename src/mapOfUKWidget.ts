@@ -290,35 +290,35 @@ class mapOfUKWidget {
             }
         })
 
-        if (smcolor == this.activeColor && allActive) {
-            this.setSmallMapColor(this.inactiveColor);
-        } else if (smcolor == this.inactiveColor && allInactive) {
-            this.setSmallMapColor(this.activeColor);
+        if (smcolor == holdClassThisContext.activeColor && allActive) {
+            holdClassThisContext.setSmallMapColor(holdClassThisContext.inactiveColor);
+        } else if (smcolor == holdClassThisContext.inactiveColor && allInactive) {
+            holdClassThisContext.setSmallMapColor(holdClassThisContext.activeColor);
         }
     }) //end checkIfAllCountiesAreSame
 
 
     setSmallMapColor(smcolor: am4core.Color): void {
-        if ((smcolor == this.inactiveColor)) {
-            this.smallTemplate.polygon.fill = this.inactiveColor;
-        } else if ((smcolor == this.activeColor)) {
-            this.smallTemplate.polygon.fill = this.activeColor;
+        if ((smcolor == holdClassThisContext.inactiveColor)) {
+            holdClassThisContext.smallTemplate.polygon.fill = holdClassThisContext.inactiveColor;
+        } else if ((smcolor == holdClassThisContext.activeColor)) {
+            holdClassThisContext.smallTemplate.polygon.fill = holdClassThisContext.activeColor;
         }
     }
 
     getSmallMapColor():am4core.Color {
-        if (holdClassThisContext.smallTemplate.polygon.fill == this.inactiveColor) {
-            return this.inactiveColor;
+        if (holdClassThisContext.smallTemplate.polygon.fill == holdClassThisContext.inactiveColor) {
+            return holdClassThisContext.inactiveColor;
         } else {
-            return this.activeColor;
+            return holdClassThisContext.activeColor;
         }
     }
         
     smallMapColorToggle():void {
-        if (this.getSmallMapColor() == this.inactiveColor) {
-            this.setSmallMapColor(this.activeColor);
+        if (holdClassThisContext.getSmallMapColor() == holdClassThisContext.inactiveColor) {
+            holdClassThisContext.setSmallMapColor(holdClassThisContext.activeColor);
         } else  {
-            this.setSmallMapColor(this.inactiveColor);
+            holdClassThisContext.setSmallMapColor(holdClassThisContext.inactiveColor);
         }
     }
         
