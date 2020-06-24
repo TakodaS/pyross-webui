@@ -63,8 +63,9 @@ class mapOfUKWidget {
         //this.mapChart.width = am4core.percent(50);
         //this.mapChart.height = am4core.percent(100);
         this.mapChart.seriesContainer.draggable = false;
-        this.mapChart.seriesContainer.resizable = false;
-        this.mapChart.maxZoomLevel = 1;
+        //this.mapChart.seriesContainer.resizable = false;
+        //this.mapChart.zoomLevel = 1;
+        //this.mapChart.maxZoomLevel = 1;
 
         // Set map definition
         this.mapChart.geodata = am4geodata_ukCountiesHigh;
