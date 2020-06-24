@@ -10,20 +10,8 @@ import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHig
 import { dm } from "./index";
 import { utils } from "./index";
 
-//Why do vars declared within methods not propogate to entire class?
-// var mapChart;
-// var polygonSeries;
-// var inactiveColor;
-// var activeColor;
-// var highlightColor; 
-// var highlightStrokeColor;
-// var polygonTemplate;
-// var smallTemplate;
-// var highlightState;
-// var aliasActiveState;
-// var aliasDefaultState;
-// var button;
 var selectedCounties = new Set();
+//The following alias is needed as the context of "this" within the event handlers is "undefined"!
 var holdClassThisContext: any;
 
 class mapOfUKWidget {
@@ -89,13 +77,6 @@ class mapOfUKWidget {
         this.polygonTemplate.strokeWidth = 0.5;
         this.polygonTemplate.tooltipText = "{name}";
         this.polygonTemplate.fill = this.inactiveColor;
-        // console.log("polygon template type", this.polygonTemplate);
-        // console.log("typeof", this.polygonTemplate.constructor.name);
-        // console.log("polygon series type", this.polygonSeries);
-        // console.log("typeof", this.polygonSeries.constructor.name);
-        
-        
-    
 
 
         // Create hover state and set alternative fill color
@@ -121,11 +102,11 @@ class mapOfUKWidget {
         aliasActiveState.properties.stroke = am4core.color("white");
         aliasActiveState.properties.strokeWidth = 1;
         
-        let aliasDefaultState = this.polygonTemplate.states.create("aliasDefault");
-        aliasDefaultState.properties.fill = this.inactiveColor;
-        aliasDefaultState.properties.fillOpacity = 1;
-        aliasDefaultState.properties.stroke = am4core.color("white");
-        aliasDefaultState.properties.strokeWidth = 1;
+        let aliasInactiveState = this.polygonTemplate.states.create("aliasInactive");
+        aliasInactiveState.properties.fill = this.inactiveColor;
+        aliasInactiveState.properties.fillOpacity = 1;
+        aliasInactiveState.properties.stroke = am4core.color("white");
+        aliasInactiveState.properties.strokeWidth = 1;
             
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -144,7 +125,6 @@ class mapOfUKWidget {
     } // end initLargeMap
 
     initSmallMap(): void {
-        //Small map to toggle features
         this.mapChart.smallMap = new am4maps.SmallMap();
         this.mapChart.smallMap.series.push(this.polygonSeries);
 
@@ -182,14 +162,14 @@ class mapOfUKWidget {
         this.polygonTemplate.events.on("hit", function (ev) {
             let mappoly = ev.target;
             let data = mappoly.dataItem.dataContext;
-            let smallmapcolor = 1;
+
             mappoly.isActive = !mappoly.isActive;
             if (mappoly.isActive) {
                 selectedCounties.add(data.id);
                 mappoly.setState("aliasActive");
             } else {
                 selectedCounties.delete(data.id);
-                mappoly.setState("aliasDefault");
+                mappoly.setState("aliasInactive");
             }
             //aliasCheckIfAllCountriesAreSame();
             holdClassThisContext.checkIfAllCountiesAreSame();
@@ -221,7 +201,7 @@ class mapOfUKWidget {
             if (mappoly.isActive) {
                 mappoly.setState("aliasActive");
             } else {
-                mappoly.setState("aliasDefault");
+                mappoly.setState("aliasInactive");
             }
         };
     
@@ -231,12 +211,12 @@ class mapOfUKWidget {
         this.mapChart.smallMap.events.on("hit", function (ev) {
             holdClassThisContext.mapChart.goHome(); //Big map does not move when smallMap is clicked on
             if (holdClassThisContext.getSmallMapColor() == holdClassThisContext.activeColor) {
-            //make all counties active
-            holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
-                if (!mapPolygon.isActive) {
-                mapPolygon.dispatchImmediately("hit");
-                }
-            })
+                //make all counties active
+                holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
+                    if (!mapPolygon.isActive) {
+                        mapPolygon.dispatchImmediately("hit");
+                    }
+                })
             } else {
                 //make all counties inative
                 holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
@@ -245,7 +225,6 @@ class mapOfUKWidget {
                     }
                 })
             }
-            holdClassThisContext.smallMapColorToggle();
         })  //end hit smallMap
 
         // Hover has complicated hidden behaviours so use a simple custom "highlight" (only changes colour)
@@ -253,7 +232,7 @@ class mapOfUKWidget {
             let smcolor = holdClassThisContext.getSmallMapColor();
             if (smcolor == holdClassThisContext.inactiveColor) {
                 holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
-                    mapPolygon.setState("aliasDefault");
+                    mapPolygon.setState("aliasInactive");
                 })
             } else {
                 holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
@@ -267,8 +246,10 @@ class mapOfUKWidget {
             holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
                 if (mapPolygon.isActive) {
                     mapPolygon.setState("aliasActive");
+                } else if (!mapPolygon.isActive) {
+                    mapPolygon.setState("aliasInactive");
                 } else {
-                    mapPolygon.setState("aliasDefault");
+                    console.log("WRONG COLOR");
                 }
             })
         });
