@@ -14,13 +14,14 @@ import { dm } from "./index";
 import { utils } from "./index";
 import { ui } from "./index";
 import { mapOfUKWidget } from "./mapOfUKWidget";
+import { pieChartWidget } from "./pieChartWidget";
 
 export function makeChart(label: string){
 	// Themes begin
 	am4core.useTheme(am4themes_animated);
 	// Themes end
 	var dataForChart = [];
-	var selectedCounties = new Set();
+	//var selectedCounties = new Set();
 	var selectedAges = new Set(["children"]);
 	//selectedAges.add("children");
 	var cacheCounties = new Set();
@@ -47,6 +48,9 @@ export function makeChart(label: string){
 	//let mapChart = ui.UKmap("mapchart", selectedCounties);
 	var mc = new mapOfUKWidget();
 	let mapChart = mc.getUKMap();
+
+	var pc = new pieChartWidget("pieChart", selectedAges);
+
 	//console.log(getGlobalThis);
 	
 	//console.log("mapChart is:", mapChart)
