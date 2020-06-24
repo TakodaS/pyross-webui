@@ -23,7 +23,8 @@ import { utils } from "./index";
 // var aliasActiveState;
 // var aliasDefaultState;
 // var button;
- var selectedCounties = new Set();
+var selectedCounties = new Set();
+var holdClassThisContext: any;
 
 class mapOfUKWidget {
     //label: string;
@@ -42,9 +43,10 @@ class mapOfUKWidget {
         // this.label = label;
         // this.selectedCounties = selectedCounties;
         //this.selectedCounties = new Set();
+        this.getThisContext();
         this.initLargeMap();
+        this.initSmallMap();
         this.setEvents();
-        //this.initSmallMap();
         //this.addControlButtons();
     }
 
@@ -54,6 +56,8 @@ class mapOfUKWidget {
     }
 
     // "Private" Interface...shouldn't be used by consumer
+    getThisContext(): void { holdClassThisContext = this };
+
     initLargeMap(): void {
         this.mapChart = am4core.create("mapchart", am4maps.MapChart);
         console.log("mapchart is", this.mapChart)
@@ -174,6 +178,7 @@ class mapOfUKWidget {
         let aliasPolygonSeries = this.polygonSeries;
         let aliasActiveColor = this.activeColor;
         let aliasInactiveColor = this.inactiveColor;
+        let aliasThisContext = this;
 
         this.polygonTemplate.events.on("hit", function (ev) {
             let mappoly = ev.target;
@@ -187,7 +192,8 @@ class mapOfUKWidget {
                 selectedCounties.delete(data.id);
                 mappoly.setState("aliasDefault");
             }
-            aliasCheckIfAllCountriesAreSame();
+            //aliasCheckIfAllCountriesAreSame();
+            aliasThisContext.checkIfAllCountiesAreSame();
         });
 
         
@@ -240,8 +246,8 @@ class mapOfUKWidget {
                 }
             })
             }
-            //smallMapColorToggle();
-        })  //end hit
+            holdClassThisContext.smallMapColorToggle();
+        })  //end hit smallMap
 
         // Hover has complicated hidden behaviours so use a simple custom "highlight" (only changes colour)
         this.mapChart.smallMap.events.on("over", function (event) {
@@ -273,9 +279,10 @@ class mapOfUKWidget {
     checkIfAllCountiesAreSame() {
         let allActive = true;
         let allInactive = true;
-        let smcolor = this.getSmallMapColor();
+        console.log("smallmapcolor", holdClassThisContext.getSmallMapColor());
+        let smcolor: am4core.Color = holdClassThisContext.getSmallMapColor();
 
-        this.polygonSeries.mapPolygons.each(function (mapPolygon) {
+        holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
             if (mapPolygon.isActive) {
                 allInactive = false;
             } else {
@@ -300,10 +307,10 @@ class mapOfUKWidget {
     }
 
     getSmallMapColor():am4core.Color {
-        if (this.smallTemplate.polygon.fill == this.inactiveColor) {
-        return this.inactiveColor;
+        if (holdClassThisContext.smallTemplate.polygon.fill == this.inactiveColor) {
+            return this.inactiveColor;
         } else {
-        return this.activeColor;
+            return this.activeColor;
         }
     }
         
