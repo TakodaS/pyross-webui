@@ -344,4 +344,3 @@ class mapOfUKWidget {
 
 // Export 
 export { mapOfUKWidget };
-
