@@ -1,11 +1,8 @@
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4maps from "@amcharts/amcharts4/maps";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
-// import * as dm from "./dataMap";
-// import * as utils from "./utils";
 
-import { dm } from "./index";
-import { utils } from "./index";
+//local imports
 import { lineChartWidget } from "./lineChartWidget";
 
 //var selectedCounties = new Set();

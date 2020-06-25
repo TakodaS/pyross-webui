@@ -1,13 +1,7 @@
 import * as am4core from "@amcharts/amcharts4/core";
-import * as am4maps from "@amcharts/amcharts4/maps";
 import * as am4charts from "@amcharts/amcharts4/charts";
-import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
 
-import { dm } from "./index";
-import { utils } from "./index";
-import { valueToRelative } from "@amcharts/amcharts4/.internal/core/utils/Utils";
+// Local imports
 import { lineChartWidget } from "./lineChartWidget";
 
 //The following alias is needed as the context of "this" within the event handlers is "undefined"!
