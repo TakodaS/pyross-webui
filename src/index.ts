@@ -25,8 +25,8 @@ export * as ui from './UIwidgets';
 //UKmap.makeChart("chartdiv")   //interactiveUKMaps.ts
 //UKmap.interactivePlot("chartdiv")
 
-import { NowCastPage } from "./NowCastPage";
-let ncPage = new NowCastPage();
+import { NowcastPage } from "./NowcastPage";
+let ncPage = new NowcastPage();
 
 
 //Class trials

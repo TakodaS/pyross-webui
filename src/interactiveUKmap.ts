@@ -47,7 +47,7 @@ export function makeChart(label: string){
 	//UUI charts
 	//let mapChart = ui.UKmap("mapchart", selectedCounties);
 
-	//Deal With NowCast (NC) Widgets
+	//Deal With Nowcast (NC) Widgets
 	var mc = new mapOfUKWidget();
 	let mapChart = mc.mapChart;
 	let pieChartData = dm.getAgeData(jsdata, 100);

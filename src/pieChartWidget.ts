@@ -8,6 +8,7 @@ import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHig
 import { dm } from "./index";
 import { utils } from "./index";
 import { valueToRelative } from "@amcharts/amcharts4/.internal/core/utils/Utils";
+import { lineChartWidget } from "./lineChartWidget";
 
 //The following alias is needed as the context of "this" within the event handlers is "undefined"!
 var holdClassThisContext: any;
@@ -21,6 +22,8 @@ class pieChartWidget  {
     private series: am4charts.PieSeries;
     private _data: any;
     private _hitFlag: boolean = false;   //If a slice is clicked on or ("hit")
+    private _lineChartWidget: lineChartWidget;
+    
     
     private label: am4core.Label = new am4core.Label();
     private total: number = 0;
@@ -63,9 +66,12 @@ class pieChartWidget  {
         this._hitFlag = value;
     }
     //
+    public set lineChartWidget(value: lineChartWidget) {
+        this._lineChartWidget = value;
+    }
+    //
     //
     //////////////////////////////////////////////////////////////////////////////////////
-
 
 
     ///////////////////// Private Interface...not to be used by consumer
@@ -150,7 +156,7 @@ class pieChartWidget  {
 
     setEvents(): void {
         this.series.slices.template.events.on("hit", function (ev) {
-            holdClassThisContext._hitFlag = true;
+            //holdClassThisContext._hitFlag = true;
             let data = ev.target.dataItem.dataContext;
             let hitValue = data.value;
             if (!ev.target.isActive) {
@@ -161,6 +167,7 @@ class pieChartWidget  {
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
             }
             holdClassThisContext.label.text = holdClassThisContext.total;
+            holdClassThisContext._lineChartWidget.updateDataRequest();
         }); // end event hit
 
         //Propogate hover and hit events on a pieseries label to the underlying slice

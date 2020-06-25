@@ -1,14 +1,12 @@
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4maps from "@amcharts/amcharts4/maps";
-import * as am4charts from "@amcharts/amcharts4/charts";
-import am4geodata_worldHigh from "@amcharts/amcharts4-geodata/worldHigh";
-import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import am4geodata_ukCountiesHigh from "@amcharts/amcharts4-geodata/ukCountiesHigh";
 // import * as dm from "./dataMap";
 // import * as utils from "./utils";
 
 import { dm } from "./index";
 import { utils } from "./index";
+import { lineChartWidget } from "./lineChartWidget";
 
 //var selectedCounties = new Set();
 //The following alias is needed as the context of "this" within the event handlers is "undefined"!
@@ -25,6 +23,8 @@ class mapOfUKWidget {
     private highlightStrokeColor: any;
     private smallTemplate: any;
     private _hitFlag: boolean = false;
+    private _lineChartWidget: lineChartWidget;
+    
 
     
     constructor() {
@@ -59,6 +59,9 @@ class mapOfUKWidget {
         this._hitFlag = value;
     }
     //
+    public set lineChartWidget(value: lineChartWidget) {
+        this._lineChartWidget = value;
+    }
     //
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -188,6 +191,7 @@ class mapOfUKWidget {
             }
             //aliasCheckIfAllCountriesAreSame();
             holdClassThisContext.checkIfAllCountiesAreSame();
+            holdClassThisContext._lineChartWidget.updateDataRequest();
         });
         
         this.polygonTemplate.events.on("over", function (ev) {
@@ -322,7 +326,6 @@ class mapOfUKWidget {
     
 
 } //end class mapOfUKWidget
-
 
 
 // Export 
