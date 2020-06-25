@@ -28,6 +28,7 @@ class mapOfUKWidget {
     //private highlightColor: any;
     private highlightStrokeColor: any;
     private smallTemplate: any;
+    private _hitFlag: boolean = false;
 
     
     constructor() {
@@ -51,6 +52,15 @@ class mapOfUKWidget {
     }
     public set selectedCounties(value) {
         this._selectedCounties = value;
+    }
+    //
+    public get hitFlag(): boolean {
+        let bool: boolean = this._hitFlag;
+        this._hitFlag = !this._hitFlag;
+        return bool;
+    }
+    public set hitFlag(value: boolean) {
+        this._hitFlag = value;
     }
     //
     //
@@ -177,6 +187,7 @@ class mapOfUKWidget {
         // let aliasThisContext = this;
 
         this.polygonTemplate.events.on("hit", function (ev) {
+            holdClassThisContext._hitFlag = true;
             let mappoly = ev.target;
             let data = mappoly.dataItem.dataContext;
 

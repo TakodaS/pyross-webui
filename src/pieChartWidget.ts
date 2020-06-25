@@ -20,6 +20,7 @@ class pieChartWidget  {
     private _pieChart: am4charts.PieChart;
     private series: am4charts.PieSeries;
     private _data: any;
+    private _hitFlag: boolean = false;   //If a slice is clicked on or ("hit")
     
     private label: am4core.Label = new am4core.Label();
     private total: number = 0;
@@ -51,6 +52,15 @@ class pieChartWidget  {
     }
     public set selectedAges(value: Set<string>) {
         this._selectedAges = value;
+    }
+    //
+    public get hitFlag(): boolean {
+        let bool: boolean = this._hitFlag;
+        this._hitFlag = !this._hitFlag;
+        return bool;
+    }
+    public set hitFlag(value: boolean) {
+        this._hitFlag = value;
     }
     //
     //
@@ -140,6 +150,7 @@ class pieChartWidget  {
 
     setEvents(): void {
         this.series.slices.template.events.on("hit", function (ev) {
+            holdClassThisContext._hitFlag = true;
             let data = ev.target.dataItem.dataContext;
             let hitValue = data.value;
             if (!ev.target.isActive) {
