@@ -1,0 +1,30 @@
+class pieChartWidget  {
+    private _selectedAges: Set<string>;
+    private _data: any;
+    private label: am4core.Label = new am4core.Label();
+    private total: number = 0;
+
+    constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
+        this.name = name;
+        holdClassThisContext = this;
+        this.initPieChart();
+    };
+
+    //////////////////////////////Public Interface////////////////////////////////////////
+    // 
+    //
+    
+    //
+    //
+    //////////////////////////////////////////////////////////////////////////////////////
+
+
+
+    ///////////////////// Private Interface...not to be used by consumer
+
+
+} // end class pieChart
+
+
+// Export
+export { pieChartWidget };

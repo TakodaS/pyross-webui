@@ -22,8 +22,12 @@ export * as utils from './utils';
 export * as ui from './UIwidgets';
 
 
-UKmap.makeChart("chartdiv")
+//UKmap.makeChart("chartdiv")   //interactiveUKMaps.ts
 //UKmap.interactivePlot("chartdiv")
+
+import { NowCastPage } from "./NowCastPage";
+let ncPage = new NowCastPage();
+
 
 //Class trials
 import { myRec } from "./myRec";

@@ -46,10 +46,12 @@ export function makeChart(label: string){
 	////////////////////////////////////////////////////
 	//UUI charts
 	//let mapChart = ui.UKmap("mapchart", selectedCounties);
-	var mc = new mapOfUKWidget();
-	let mapChart = mc.getUKMap();
 
-	var pc = new pieChartWidget("pieChart", selectedAges);
+	//Deal With NowCast (NC) Widgets
+	var mc = new mapOfUKWidget();
+	let mapChart = mc.mapChart;
+	let pieChartData = dm.getAgeData(jsdata, 100);
+	var pc = new pieChartWidget("piechart", pieChartData, selectedAges);
 
 	//console.log(getGlobalThis);
 	

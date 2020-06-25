@@ -90,7 +90,7 @@ class lineChartWidget {
 
         // Create value axis
         let yAxis = this.lineChart.yAxes.push(new am4charts.ValueAxis());
-        this.lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(this.selectedAges), ["all"]);
+        this.lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(this._selectedAges), ["all"]);
         var series1 = this.lineChart.series.push(new am4charts.LineSeries());
         series1.dataFields.valueX = "x";
         series1.dataFields.valueY = "y";
@@ -101,15 +101,15 @@ class lineChartWidget {
 
         setInterval(function() {
             //console.log("checking for changes");
-            if ( !(utils.eqSet(holdClassThisContext.cacheCounties, holdClassThisContext.selectedCounties))  &&
+            if ( !(utils.eqSet(holdClassThisContext.cacheCounties, holdClassThisContext._selectedCounties))  &&
                 utils.eqSet(holdClassThisContext.cacheAges, holdClassThisContext.selectedAges) )  {
                 //console.log("difference detected");
                 holdClassThisContext.lineChart.data = dm.convertData(jsdata, "t", "S",
-                    Array.from(holdClassThisContext.selectedAges), Array.from(holdClassThisContext.selectedCounties));
+                    Array.from(holdClassThisContext.selectedAges), Array.from(holdClassThisContext._selectedCounties));
                 holdClassThisContext.lineChart.invalidateData();
 
                 holdClassThisContext.cacheAges = new Set(holdClassThisContext.selectedAges);
-                holdClassThisContext.cacheCounties = new Set(holdClassThisContext.selectedCounties);
+                holdClassThisContext.cacheCounties = new Set(holdClassThisContext._selectedCounties);
             }
 
         }, 300);

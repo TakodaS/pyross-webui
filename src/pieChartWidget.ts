@@ -15,15 +15,18 @@ var holdClassThisContext: any;
 
 class pieChartWidget  {
     private name: string;
-    //private selectedCounties: Set<number>;
-    private selectedAges: Set<string>;
-    private pieChart: am4charts.PieChart;
+    private _pieChartData: any;
+    private _selectedAges: Set<string>;
+    private _pieChart: am4charts.PieChart;
     private series: am4charts.PieSeries;
+    private _data: any;
+    
     private label: am4core.Label = new am4core.Label();
     private total: number = 0;
 
-    constructor(name: string, selectedAges: Set<string>) {
+    constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
+        this._pieChartData = pieChartData;
         this.selectedAges = selectedAges;
         holdClassThisContext = this;
         this.initPieChart();
@@ -33,30 +36,23 @@ class pieChartWidget  {
     //////////////////////////////Public Interface////////////////////////////////////////
     // 
     //
-    getPieChart(){
-        return this.pieChart;
-    };
-
-    //
-    // Getters
-    get selectedCounties(): Set<number> {
-        return this.selectedCounties;
+    public get pieChart(): am4charts.PieChart {
+        return this._pieChart;
+    }
+    public get data(): any {
+        return this._data;
+    }
+    public set data(value: any) {
+        this._data = value;
     }
     //
-    get selectedAges():Set<string> {
-        return this.selectedAges;
-    };
-
-    // Setters
-    set selectedCounties(value: Set<string>) {
-        this.selectedCounties = value;
+    public get selectedAges(): Set<string> {
+        return this._selectedAges;
+    }
+    public set selectedAges(value: Set<string>) {
+        this._selectedAges = value;
     }
     //
-    set selectedAges(value: Set<string>) {
-        this.selectedAges = value;
-    }
-    //
-   
     //
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,19 +61,20 @@ class pieChartWidget  {
     ///////////////////// Private Interface...not to be used by consumer
 
     initPieChart(): void {
-        this.pieChart = am4core.create(this.name, am4charts.PieChart);
-        this.pieChart.hiddenState.properties.opacity = 0; // this creates initial fade-in
-        this.pieChart.seriesContainer.zIndex = -1;
-        this.pieChart.width = am4core.percent(20);
-        this.pieChart.height = am4core.percent(100);
-        this.pieChart.y = am4core.percent(-30);
-        this.series = this.pieChart.series.push(new am4charts.PieSeries());
+        this._pieChart = am4core.create(this.name, am4charts.PieChart);
+        this._pieChart.data = this._pieChartData;
+        this._pieChart.hiddenState.properties.opacity = 0; // this creates initial fade-in
+        this._pieChart.seriesContainer.zIndex = -1;
+        this._pieChart.width = am4core.percent(20);
+        this._pieChart.height = am4core.percent(100);
+        this._pieChart.y = am4core.percent(-30);
+        this.series = this._pieChart.series.push(new am4charts.PieSeries());
         this.series.dataFields.value = "value";
         //series.dataFields.radiusValue = "value";
         this.series.dataFields.category = "ageRange";
         this.series.slices.template.cornerRadius = 6;
         this.series.colors.step = 3;
-        this.pieChart.innerRadius = am4core.percent(5);
+        this._pieChart.innerRadius = am4core.percent(5);
 
         this.series.hiddenState.properties.endAngle = -90;
 
@@ -119,7 +116,7 @@ class pieChartWidget  {
         this.series.labels.template.fontFamily = "Times";
         this.series.labels.template.fontWeight = "bold";
 
-        //pieChart.legend = new am4charts.Legend();
+        //_pieChart.legend = new am4charts.Legend();
 
         //Label: total of selected slices
 
@@ -134,8 +131,8 @@ class pieChartWidget  {
         //label.text = "0";
         this.label.horizontalCenter = "middle";
         this.label.verticalCenter = "middle";
-        //label.x = pieChart.x;
-        //label.y = pieChart.y;
+        //label.x = _pieChart.x;
+        //label.y = _pieChart.y;
         this.label.fontSize = 15;
         this.label.fontFamily = "Times";
         this.label.fontWeight = "bold";
