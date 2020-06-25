@@ -59,10 +59,13 @@ class NowCastPage  {
         //let mapChart = ui.UKmap("mapchart", selectedCounties);
 
         //Deal With NowCast (NC) Widgets
-        var mc = new mapOfUKWidget();
+        let mc = new mapOfUKWidget();
         let mapChart = mc.mapChart;
         let pieChartData = dm.getAgeData(jsdata, 100);
-        var pc = new pieChartWidget("piechart", pieChartData, selectedAges);
+        let pc = new pieChartWidget("piechart", pieChartData, selectedAges);
+        let lc = new lineChartWidget("linechart", mc.selectedCounties, pc.selectedAges);
+
+
 
     }// end initPage
 

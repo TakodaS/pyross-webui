@@ -112,7 +112,7 @@ class lineChartWidget {
                 holdClassThisContext.cacheCounties = new Set(holdClassThisContext._selectedCounties);
             }
 
-        }, 300);
+        }, 30000);
         // Add or subtract slices value from total value
         
     }// end setEvents
