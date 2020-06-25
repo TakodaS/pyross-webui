@@ -8,12 +8,23 @@ import { pieChartWidget } from "./pieChartWidget";
 import { lineChartWidget } from "./lineChartWidget";
 import { dm } from "./index";
 import { jsdata } from "./index";
+import { MapChart } from "@amcharts/amcharts4/maps";
+
+
+//The following alias is needed as the context of "this" within the event handlers is "undefined"!
+var holdClassThisContext: any;
 
 
 class NowCastPage  {
+    private mchart: any;
+    private pchart: any;
+    private lchart: any;
+    
 
     constructor() {
+        holdClassThisContext = this;
         this.initPage();
+        this.setEvents();
     };
 
     //////////////////////////////Public Interface////////////////////////////////////////
@@ -31,13 +42,8 @@ class NowCastPage  {
         // Themes begin
         am4core.useTheme(am4themes_animated);
         // Themes end
-        var dataForChart = [];
-        //var selectedCounties = new Set();
-        var selectedAges = new Set(["children"]);
-        //selectedAges.add("children");
-        var cacheCounties = new Set();
-        var cacheAges = new Set();
 
+       
 
         ////////////////////////////////////////////////////////////// 
         // Create containers 
@@ -55,20 +61,38 @@ class NowCastPage  {
         //outputContainer.height = am4core.percent(100);
 
         ////////////////////////////////////////////////////
-        //UUI charts
-        //let mapChart = ui.UKmap("mapchart", selectedCounties);
+        //
 
-        //Deal With NowCast (NC) Widgets
-        let mc = new mapOfUKWidget();
-        let mapChart = mc.mapChart;
+        //Create NowCast (NC) Widgets
+        this.mchart = new mapOfUKWidget();
+
+        //Fake pie slice data for testing piechart and linechart
         let pieChartData = dm.getAgeData(jsdata, 100);
-        let pc = new pieChartWidget("piechart", pieChartData, selectedAges);
-        let lc = new lineChartWidget("linechart", mc.selectedCounties, pc.selectedAges);
+        let selectedAges: Set<string> = new Set(["children"]);
+        let selectedCounties: Set<number> = new Set();
 
+        this.pchart = new pieChartWidget("piechart", pieChartData, selectedAges);
+        this.lchart = new lineChartWidget("linechart", selectedCounties, selectedAges);
+        
 
 
     }// end initPage
 
+    setEvents(): void {
+
+        // Add or subtract slices value from total value
+
+        setInterval(function() {
+            //console.log("checking for changes");
+            if ( holdClassThisContext.mchart.hitFlag || holdClassThisContext.pchart.hitFlag) {  //data has changed
+                //console.log("difference detected");
+                holdClassThisContext.lchart.data = dm.convertData(jsdata, "t", "S",
+                    Array.from(holdClassThisContext.pchart.selectedAges), Array.from(holdClassThisContext.mchart.selectedCounties));
+                holdClassThisContext.lineChart.invalidateData();
+            }
+
+        }, 10000);
+    }// end setEvents
 
 } // end class NowCastPage
 

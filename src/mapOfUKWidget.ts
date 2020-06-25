@@ -15,10 +15,6 @@ import { utils } from "./index";
 var holdClassThisContext: any;
 
 class mapOfUKWidget {
-    //label: string;
-    //selectedCounties: any;
-    //label: string;
-    //selectedCounties: any;
     private _mapChart: am4maps.MapChart;
     private polygonTemplate: am4maps.MapPolygon;
     private polygonSeries: am4maps.MapPolygonSeries;
@@ -50,9 +46,9 @@ class mapOfUKWidget {
     public get selectedCounties() {
         return this._selectedCounties;
     }
-    public set selectedCounties(value) {
-        this._selectedCounties = value;
-    }
+    // public set selectedCounties(value) {
+    //     this._selectedCounties = value;
+    // }
     //
     public get hitFlag(): boolean {
         let bool: boolean = this._hitFlag;
@@ -174,17 +170,8 @@ class mapOfUKWidget {
     //////////////////////////////////////////////////
     //Events
     ////////////////////////////////////////////////////
-   // onClickGood = (e: Event) => { this.info = e.message }
     //Sprite.events: am4core.SpriteEventDispatcher<am4core.AMEvent<am4maps.MapPolygon, am4maps.IMapPolygonEvents>>
     private setEvents(): void {
-        //The following alias(S) are needed as the context of "this" within the event handlers is "undefined"!
-        // let aliasCheckIfAllCountriesAreSame = this.checkIfAllCountiesAreSame;
-        // let aliasMapChart = this.mapChart;
-        // let aliasGetSmallMapColor = this.getSmallMapColor;
-        // let aliasPolygonSeries = this.polygonSeries;
-        // let aliasActiveColor = this.activeColor;
-        // let aliasInactiveColor = this.inactiveColor;
-        // let aliasThisContext = this;
 
         this.polygonTemplate.events.on("hit", function (ev) {
             holdClassThisContext._hitFlag = true;
@@ -202,22 +189,6 @@ class mapOfUKWidget {
             //aliasCheckIfAllCountriesAreSame();
             holdClassThisContext.checkIfAllCountiesAreSame();
         });
-
-        
-    // secondMethod = () => {
-    //         this.checkIfAllCountiesAreSame();
-    // }
-    
-    // secondMethod2 = () => {
-    //     let thisC = this.printIt;
-    //     this.polygonTemplate.events.on("hit", function (ev) {
-    //         thisC();
-    //     }
-    // });
-
-    // printIt(): void {
-    //     console.log("PRINTINT ITIT T TITITIT");
-    // }
         
         this.polygonTemplate.events.on("over", function (ev) {
             let mappoly = ev.target;
@@ -233,8 +204,6 @@ class mapOfUKWidget {
             }
         };
     
-    
-
         // Set active status (and therefore color) of the BIG MAP to be the same as smallMap.  Toggle smallMap color.
         this._mapChart.smallMap.events.on("hit", function (ev) {
             holdClassThisContext.mapChart.goHome(); //Big map does not move when smallMap is clicked on
