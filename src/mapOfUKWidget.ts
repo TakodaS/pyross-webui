@@ -13,7 +13,7 @@ class mapOfUKWidget {
     private _mapChart: am4maps.MapChart;
     private polygonTemplate: am4maps.MapPolygon;
     private polygonSeries: am4maps.MapPolygonSeries;
-    private _selectedCounties: Set<number> = new Set();
+    private _selectedCounties: Set<string> = new Set();
     private inactiveColor: any;
     private activeColor: any;
     //private highlightColor: any;

@@ -1,4 +1,6 @@
 
+//export * as am4core from "./amchartsCOREdeuglified.js";
+
 export * as jsdata from './data/UK.json';
 export * as dm from './dataMap';
 export * as utils from './utils';
@@ -13,7 +15,7 @@ let ncPage = new NowcastPage();
 import { myRec } from "./myRec";
 var r1 = new myRec(2, 10);
 var v1 = r1.area;
-console.log("myrec2 is Austen:", v1)
+console.log("my rectangle is:", v1)
 
 
 

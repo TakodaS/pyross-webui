@@ -1,7 +1,6 @@
 // AmCharts Imports
 import * as am4core from "@amcharts/amcharts4/core";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
-
 // Local imports
 import { mapOfUKWidget } from "./mapOfUKWidget";
 import { pieChartWidget } from "./pieChartWidget";
@@ -59,7 +58,7 @@ class NowcastPage  {
         //Fake pie slice data for testing piechart and linechart
         let pieChartData = dm.getAgeData(jsdata, 100);
         let selectedAges: Set<string> = new Set(["children"]);
-        let selectedCounties: Set<number> = new Set();
+        let selectedCounties: Set<string> = new Set();
 
         this.pchart = new pieChartWidget("piechart", pieChartData, selectedAges);
         this.lchart = new lineChartWidget("linechart", this.mchart, this.pchart );

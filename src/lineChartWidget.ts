@@ -16,15 +16,15 @@ class lineChartWidget {
     private _name: string;
     private mchart: mapOfUKWidget;
     private pchart: pieChartWidget;
-    // private _selectedCounties: Set<number>;
+    // private _selectedCounties: Set<string>;
     // private _selectedAges: Set<string>;
     private _lineChart: am4charts.XYChart;
-    private cacheCounties: Set<number>;
+    private cacheCounties: Set<string>;
     private cacheAges: Set<string>;
     private _data: any;
     
 
-    //constructor(name: string, selectedCounties: Set<number>, selectedAges: Set<string>) {
+    //constructor(name: string, selectedCounties: Set<string>, selectedAges: Set<string>) {
     constructor(name: string, mchart: mapOfUKWidget, pchart: pieChartWidget) {
         this._name = name;
         this.mchart = mchart;
