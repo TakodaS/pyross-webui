@@ -74,10 +74,13 @@ class pieChartWidget  {
         this._pieChart = am4core.create(this.name, am4charts.PieChart);
         this._pieChart.data = this._pieChartData;
         this._pieChart.hiddenState.properties.opacity = 0; // this creates initial fade-in
-        this._pieChart.seriesContainer.zIndex = -1;
-        this._pieChart.width = am4core.percent(20);
-        this._pieChart.height = am4core.percent(100);
-        this._pieChart.y = am4core.percent(-30);
+        //this._pieChart.seriesContainer.zIndex = -1;
+        //this._pieChart.width = am4core.percent(20);
+        //this._pieChart.height = am4core.percent(100);
+        //this._pieChart.align = "center";
+        //this._pieChart.valign;
+        this._pieChart.radius = am4core.percent(60);
+        //this._pieChart.y = am4core.percent(-30);
         this.series = this._pieChart.series.push(new am4charts.PieSeries());
         this.series.dataFields.value = "value";
         //series.dataFields.radiusValue = "value";
