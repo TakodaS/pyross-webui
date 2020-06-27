@@ -80,7 +80,9 @@ class mapOfUKWidget {
         this._mapChart.geodata = am4geodata_ukCountiesHigh;
         // Set projection
         this._mapChart.projection = new am4maps.projections.Miller();
-        this._mapChart.scale = 1;
+        this._mapChart.scale = 1.15;
+        this._mapChart.x = am4core.percent(-5)
+        this._mapChart.y = am4core.percent(-15)
 
         // Create map polygon series  (UK minus Ireland)
         this.polygonSeries = this._mapChart.series.push(new am4maps.MapPolygonSeries());
