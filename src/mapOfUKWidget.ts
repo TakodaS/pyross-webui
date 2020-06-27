@@ -13,6 +13,7 @@ class mapOfUKWidget {
     private _mapChart: am4maps.MapChart;
     private polygonTemplate: am4maps.MapPolygon;
     private polygonSeries: am4maps.MapPolygonSeries;
+    private polygonSeriesIE: am4maps.MapPolygonSeries;
     private _selectedCounties: Set<string> = new Set();
     private inactiveColor: any;
     private activeColor: any;
@@ -80,8 +81,10 @@ class mapOfUKWidget {
         this._mapChart.geodata = am4geodata_ukCountiesHigh;
         // Set projection
         this._mapChart.projection = new am4maps.projections.Miller();
+
+        //Make more space for scaling
         this._mapChart.scale = 1.15;
-        this._mapChart.x = am4core.percent(-5)
+        this._mapChart.x = am4core.percent(-4)
         this._mapChart.y = am4core.percent(-15)
 
         // Create map polygon series  (UK minus Ireland)
@@ -136,12 +139,12 @@ class mapOfUKWidget {
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         // Create map polygon series  (Ireland only)
-        let polygonSeriesIE = this._mapChart.series.push(new am4maps.MapPolygonSeries());
+        this.polygonSeriesIE = this._mapChart.series.push(new am4maps.MapPolygonSeries());
         // Include Ireland Only
-        polygonSeriesIE.include = ["IE"];
+        this.polygonSeriesIE.include = ["IE"];
         // Make map load polygon (like country names) data from GeoJSON
-        polygonSeriesIE.useGeodata = true;
-        let templateIE = polygonSeriesIE.mapPolygons.template;
+        this.polygonSeriesIE.useGeodata = true;
+        let templateIE = this.polygonSeriesIE.mapPolygons.template;
         templateIE.strokeWidth = 0.5;
         templateIE.tooltipText = "{name}";
         templateIE.fill = am4core.color("green"); //green :)
@@ -152,12 +155,15 @@ class mapOfUKWidget {
     private initSmallMap(): void {
         this._mapChart.smallMap = new am4maps.SmallMap();
         this._mapChart.smallMap.series.push(this.polygonSeries);
+        //this._mapChart.smallMap.series.push(this.polygonSeriesIE);
 
         // Disable pan and zoom comtrols
         this._mapChart.smallMap.draggable = false;
         this._mapChart.smallMap.resizable = false;
         this._mapChart.smallMap.rectangle.strokeWidth = 0;
         this._mapChart.smallMap.scale = 1;
+       //this._mapChart.smallMap.valign = "middle";
+        
 
         let smallSeries = this._mapChart.smallMap.series.getIndex(0);
         this.smallTemplate = smallSeries.mapPolygons.template;

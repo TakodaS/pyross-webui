@@ -8,7 +8,7 @@ import { lineChartWidget } from "./lineChartWidget";
 var holdClassThisContext: any;
 
 
-class pieChartWidget  {
+class pieChartWidget {
     private name: string;
     private _pieChartData: any;
     private _selectedAges: Set<string>;
@@ -17,9 +17,7 @@ class pieChartWidget  {
     private _data: any;
     private _hitFlag: boolean = false;   //If a slice is clicked on or ("hit")
     private _lineChartWidget: lineChartWidget;
-    
-    
-    private label: am4core.Label = new am4core.Label();
+    private totalLabel: am4core.Label = new am4core.Label();
     private total: number = 0;
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
@@ -79,15 +77,15 @@ class pieChartWidget  {
         //this._pieChart.height = am4core.percent(100);
         //this._pieChart.align = "center";
         //this._pieChart.valign;
-        this._pieChart.radius = am4core.percent(60);
+        this._pieChart.radius = am4core.percent(90);
         //this._pieChart.y = am4core.percent(-30);
         this.series = this._pieChart.series.push(new am4charts.PieSeries());
         this.series.dataFields.value = "value";
-        //series.dataFields.radiusValue = "value";
+        this.series.dataFields.radiusValue = "value";
         this.series.dataFields.category = "ageRange";
         this.series.slices.template.cornerRadius = 6;
-        this.series.colors.step = 3;
-        this._pieChart.innerRadius = am4core.percent(5);
+        this.series.colors.step = 1;
+        this._pieChart.innerRadius = am4core.percent(0);
 
         this.series.hiddenState.properties.endAngle = -90;
 
@@ -105,50 +103,77 @@ class pieChartWidget  {
         this.series.slices.template.strokeWidth = 1;
         this.series.slices.template.strokeOpacity = 0.2;
         this.series.slices.template.fillOpacity = 1;
-        // series.labels.template.disabled = true;
-        // series.ticks.template.disabled = true;
+        this.series.labels.template.disabled = false;
+        this.series.ticks.template.disabled = false;
 
         //curved labels
-        this.series.alignLabels = false;
-        this.series.labels.template.bent = true;
-        this.series.labels.template.radius = -10;
-        this.series.labels.template.padding(0, 0, 0, 0);
-        this.series.labels.template.fill = am4core.color("#000");
-        this.series.ticks.template.disabled = true;
+        // this.series.alignLabels = false;
+        // this.series.labels.template.bent = true;
+        // this.series.labels.template.radius = -10;
+        // this.series.labels.template.padding(0, 0, 0, 0);
+        // this.series.labels.template.fill = am4core.color("#000");
 
         //rotated labels
-        // series.ticks.template.disabled = true;
-        // series.alignLabels = false;
-        // series.labels.template.text = "{ageRange}";
-        // series.labels.template.radius = am4core.percent(-40);
-        // series.labels.template.fill = am4core.color("black");
-        // series.labels.template.relativeRotation = 90;
+        this.series.ticks.template.disabled = true;
+        this.series.alignLabels = false;
+        this.series.labels.template.text = "{ageRange}";
+        this.series.labels.template.radius = am4core.percent(0);
+        this.series.labels.template.fill = am4core.color("black");
+        this.series.labels.template.relativeRotation = 90;
 
         //Fonts
-        this.series.labels.template.fontSize = 10;
+        this.series.labels.template.fontSize = 20;
         this.series.labels.template.fontFamily = "Times";
         this.series.labels.template.fontWeight = "bold";
 
         //_pieChart.legend = new am4charts.Legend();
 
+        this.series.colors.list = [
+            am4core.color("#A3C1AD"),  //Cambridge Blue!
+            am4core.color("#002147"),  //Oxford Blue
+            am4core.color("#AC8E35"),  //Dark Goldenrod
+            am4core.color("#7D544F"),  //Tuscan Red
+            am4core.color("#615019"),  //Field Drab
+            am4core.color("#555555"),  //Davy's Grey
+        ];
+
         //Label: total of selected slices
+        var container = new am4core.Container();
+        container.parent = this.series;
+        container.horizontalCenter = "middle";
+        container.verticalCenter = "middle";
+        //container.width = am4core.percent(10) / Math.sqrt(2);
+        //container.background.fill = am4core.color("white");
+        //container.fill = am4core.color("white");
+        
+
+        this.totalLabel.parent = container;
+        this.totalLabel.text = this.total.toString();
+        this.totalLabel.fill = am4core.color("red");
+        this.totalLabel.stroke = am4core.color("black");
+        this.totalLabel.horizontalCenter = "middle";
+        this.totalLabel.verticalCenter = "middle";
+        this.totalLabel.fontSize = 30;
+        this.totalLabel.fontFamily = "Verdana";
+        this.totalLabel.fontWeight = "bold";
+
 
         //label = new am4core.Label();
-        this.label.parent = this.series;
-        //var total = totalValue();
-        //this.total = 0;
-        this.label.text = this.total.toString();
-        this.label.align = "center";
-        this.label.isMeasured = false;
-        //label.zIndex = 10;
-        //label.text = "0";
-        this.label.horizontalCenter = "middle";
-        this.label.verticalCenter = "middle";
-        //label.x = _pieChart.x;
-        //label.y = _pieChart.y;
-        this.label.fontSize = 15;
-        this.label.fontFamily = "Times";
-        this.label.fontWeight = "bold";
+        // this.label.parent = this.series;
+        // //var total = totalValue();
+        // //this.total = 0;
+        // this.label.text = this.total.toString();
+        // this.label.align = "center";
+        // this.label.isMeasured = false;
+        // //label.zIndex = 10;
+        // //label.text = "0";
+        // this.label.horizontalCenter = "middle";
+        // this.label.verticalCenter = "middle";
+        // //label.x = _pieChart.x;
+        // //label.y = _pieChart.y;
+        // this.label.fontSize = 15;
+        // this.label.fontFamily = "Times";
+        // this.label.fontWeight = "bold";
     } // end initPieChart
 
     setEvents(): void {
@@ -163,11 +188,20 @@ class pieChartWidget  {
                 holdClassThisContext.total = holdClassThisContext.total + hitValue;
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
             }
-            holdClassThisContext.label.text = holdClassThisContext.total;
-            holdClassThisContext._lineChartWidget.updateDataRequest();
+            holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
+            // holdClassThisContext._lineChartWidget.updateDataRequest();
         }); // end event hit
 
         //Propogate hover and hit events on a pieseries label to the underlying slice
+        this.series.labels.template.events.on("over", function (ev) {
+            let parentSlice = ev.target._dataItem._slice;
+            parentSlice.isHover = true;
+        });
+        this.series.labels.template.events.on("out", function (ev) {
+            let parentSlice = ev.target._dataItem._slice;
+            parentSlice.isHover = false;
+        });
+
         this.series.labels.template.events.on("hit", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
             parentSlice.dispatchImmediately("hit");

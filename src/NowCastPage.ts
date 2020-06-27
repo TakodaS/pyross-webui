@@ -1,6 +1,11 @@
 // AmCharts Imports
 import * as am4core from "@amcharts/amcharts4/core";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+//import am4themes_amchartsdark from "@amcharts/amcharts4/themes/amchartsdark";
+
+am4core.useTheme(am4themes_animated);
+//am4core.useTheme(am4themes_amchartsdark);
+
 // Local imports
 import { mapOfUKWidget } from "./mapOfUKWidget";
 import { pieChartWidget } from "./pieChartWidget";
@@ -56,7 +61,12 @@ class NowcastPage  {
         this.mchart = new mapOfUKWidget();
 
         //Fake pie slice data for testing piechart and linechart
-        let pieChartData = dm.getAgeData(jsdata, 100);
+        let fakeData = [{ ageRange: "children", value: 98681 }, { ageRange: "Adults", value: 549963 },
+            { ageRange: "millennials", value: 200000 }, { ageRange: "Gen Z", value: 549963 },
+            { ageRange: "Baby Boomer", value: 400000 }, { ageRange: "Snowflakes", value: 1000000 }
+        ]
+        //let pieChartData = dm.getAgeData(jsdata, 100);
+        let pieChartData = fakeData;
         let selectedAges: Set<string> = new Set(["children"]);
         let selectedCounties: Set<string> = new Set();
 
