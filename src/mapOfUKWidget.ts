@@ -84,7 +84,7 @@ class mapOfUKWidget {
 
         //Make more space for scaling
         this._mapChart.scale = 1.15;
-        this._mapChart.x = am4core.percent(-4)
+        this._mapChart.x = am4core.percent(-9)
         this._mapChart.y = am4core.percent(-15)
 
         // Create map polygon series  (UK minus Ireland)
@@ -139,16 +139,16 @@ class mapOfUKWidget {
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         // Create map polygon series  (Ireland only)
-        this.polygonSeriesIE = this._mapChart.series.push(new am4maps.MapPolygonSeries());
-        // Include Ireland Only
-        this.polygonSeriesIE.include = ["IE"];
-        // Make map load polygon (like country names) data from GeoJSON
-        this.polygonSeriesIE.useGeodata = true;
-        let templateIE = this.polygonSeriesIE.mapPolygons.template;
-        templateIE.strokeWidth = 0.5;
-        templateIE.tooltipText = "{name}";
-        templateIE.fill = am4core.color("green"); //green :)
-        templateIE.fillOpacity = 0.3;
+        // this.polygonSeriesIE = this._mapChart.series.push(new am4maps.MapPolygonSeries());
+        // // Include Ireland Only
+        // this.polygonSeriesIE.include = ["IE"];
+        // // Make map load polygon (like country names) data from GeoJSON
+        // this.polygonSeriesIE.useGeodata = true;
+        // let templateIE = this.polygonSeriesIE.mapPolygons.template;
+        // templateIE.strokeWidth = 0.5;
+        // templateIE.tooltipText = "{name}";
+        // templateIE.fill = am4core.color("green"); //green :)
+        // templateIE.fillOpacity = 0.3;
 
     } // end initLargeMap
 
@@ -160,8 +160,15 @@ class mapOfUKWidget {
         // Disable pan and zoom comtrols
         this._mapChart.smallMap.draggable = false;
         this._mapChart.smallMap.resizable = false;
+        //this._mapChart.smallMap.zIndex = 10000;
         this._mapChart.smallMap.rectangle.strokeWidth = 0;
         this._mapChart.smallMap.scale = 1;
+        this._mapChart.smallMap.isMeasured = false;
+        this._mapChart.smallMap.x = am4core.percent(76);
+        //this._mapChart.smallMap.horizontalCenter = "middle";
+        this._mapChart.smallMap.y = am4core.percent(46);;
+        
+        //this._mapChart.smallMap.rectangle.zIndex = -100;
        //this._mapChart.smallMap.valign = "middle";
         
 

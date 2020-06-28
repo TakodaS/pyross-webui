@@ -61,9 +61,9 @@ class NowcastPage  {
         this.mchart = new mapOfUKWidget();
 
         //Fake pie slice data for testing piechart and linechart
-        let fakeData = [{ ageRange: "children", value: 98681 }, { ageRange: "Adults", value: 549963 },
-            { ageRange: "millennials", value: 200000 }, { ageRange: "Gen Z", value: 549963 },
-            { ageRange: "Baby Boomer", value: 400000 }, { ageRange: "Snowflakes", value: 1000000 }
+        let fakeData = [{ ageRange: "children", value: 98681 }, { ageRange: "millennials", value: 200000 },
+            { ageRange: "Gen Z", value: 309963 }, { ageRange: "Baby Boomer", value: 400000 },
+            { ageRange: "Adults", value: 549963 }, { ageRange: "Snowflakes", value: 1000000 }
         ]
         //let pieChartData = dm.getAgeData(jsdata, 100);
         let pieChartData = fakeData;

@@ -22,7 +22,7 @@ class lineChartWidget {
     private cacheCounties: Set<string>;
     private cacheAges: Set<string>;
     private _data: any;
-    
+
 
     //constructor(name: string, selectedCounties: Set<string>, selectedAges: Set<string>) {
     constructor(name: string, mchart: mapOfUKWidget, pchart: pieChartWidget) {
@@ -70,28 +70,41 @@ class lineChartWidget {
 
         //this.lineChart = am4core.create("linechart", am4charts.XYChart);
         //lineChart.height = am4core.percent(25);
-        this.lineChart.responsive.enabled = true;
-        this.lineChart.height = 250
-        this.lineChart.width = am4core.percent(100);
-        this.lineChart.fontSize = "0.8em";
-        this.lineChart.paddingRight = 30;
-        this.lineChart.paddingLeft = 30;
-        this.lineChart.maskBullets = false;
-        this.lineChart.zoomOutButton.disabled = true;
-        this.lineChart.paddingBottom = 5;
-        this.lineChart.paddingTop = 3;
-        let title = this.lineChart.titles.push(new am4core.Label());
-        title.text = "Fake COVID-19 cases";
-        title.marginBottom = 15;
-        let xAxis = this.lineChart.xAxes.push(new am4charts.ValueAxis());
+        this._lineChart.responsive.enabled = true;
+        this._lineChart.height = 250
+        this._lineChart.width = am4core.percent(100);
+        this._lineChart.fontSize = "0.8em";
+        this._lineChart.paddingRight = 30;
+        this._lineChart.paddingLeft = 30;
+        this._lineChart.maskBullets = false;
+        this._lineChart.zoomOutButton.disabled = true;
+        this._lineChart.paddingBottom = 0;
+        this._lineChart.paddingTop = 10;
+
+        // let title = this._lineChart.titles.push(new am4core.Label());
+        // title.text = "Fake COVID-19 cases";
+        // title.marginBottom = 15;
+        //Put title directly on chart to save space /////////////////////////////
+        let lclabel = this._lineChart.createChild(am4core.Label);
+        lclabel.text = "FAKE COVID CASES";
+        lclabel.fontSize = 20;
+        lclabel.align = "center";
+        lclabel.isMeasured = false;
+        lclabel.x = am4core.percent(50);
+        lclabel.horizontalCenter = "middle";
+        lclabel.y = 20;
+
+        let xAxis = this._lineChart.xAxes.push(new am4charts.ValueAxis());
         xAxis.renderer.minGridDistance = 40;
 
         // Create value axis
-        let yAxis = this.lineChart.yAxes.push(new am4charts.ValueAxis());
-        this.lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(this.pchart.selectedAges), ["all"]);
-        var series1 = this.lineChart.series.push(new am4charts.LineSeries());
+        let yAxis = this._lineChart.yAxes.push(new am4charts.ValueAxis());
+        this._lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(this.pchart.selectedAges), ["all"]);
+        var series1 = this._lineChart.series.push(new am4charts.LineSeries());
         series1.dataFields.valueX = "x";
         series1.dataFields.valueY = "y";
+
+        
 
     }// end initLineChart
 
