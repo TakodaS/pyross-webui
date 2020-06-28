@@ -164,7 +164,7 @@ class mapOfUKWidget {
         this._mapChart.smallMap.rectangle.strokeWidth = 0;
         this._mapChart.smallMap.scale = 1;
         this._mapChart.smallMap.isMeasured = false;
-        this._mapChart.smallMap.x = am4core.percent(76);
+        this._mapChart.smallMap.x = am4core.percent(77);
         //this._mapChart.smallMap.horizontalCenter = "middle";
         this._mapChart.smallMap.y = am4core.percent(46);;
         
