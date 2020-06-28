@@ -15,11 +15,11 @@ class pieChartWidget {
     private _pieChart: am4charts.PieChart;
     private series: am4charts.PieSeries;
     private _data: any;
-    private _hitFlag: boolean = false;   //If a slice is clicked on or ("hit")
+    //private _hitFlag: boolean = false;   //If a slice is clicked on or ("hit")
     private _lineChartWidget: lineChartWidget;
     private totalLabel: am4core.Label = new am4core.Label();
     private total: number = 0;
-    //private highlightStrokeColor: any = am4core.color("black");
+    private highlightStrokeColor: any = am4core.color("red");
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
@@ -86,11 +86,12 @@ class pieChartWidget {
         this.series.dataFields.value = "value";
         this.series.dataFields.radiusValue = "value";
         this.series.dataFields.category = "ageRange";
-        this.series.colors.step = 1;
+        
         this.series.hiddenState.properties.endAngle = -90;
 
         this.series.slices.template.cornerRadius = 6;
-        this.series.slices.template.fillOpacity = 0.5;
+        this.series.slices.template.fillOpacity = 0.7;
+        this.series.slices.template.strokeWidth = 0;
         this.series.slices.template.tooltipText = "{value}";
 
         //rotated labels
@@ -98,65 +99,54 @@ class pieChartWidget {
         this.series.alignLabels = false;
         this.series.labels.template.text = "{ageRange}";
         this.series.labels.template.radius = am4core.percent(0);
-        this.series.labels.template.fill = am4core.color("black");
         this.series.labels.template.relativeRotation = 90;
         //Fonts
         this.series.labels.template.fontSize = 20;
         this.series.labels.template.fontFamily = "Times";
         this.series.labels.template.fontWeight = "bold";
+        this.series.labels.template.fill = am4core.color("black");
 
-        
-        
+         ////////// COLORS
+        this.series.colors.list = [
+            am4core.color("#A3C1AD"),  //Cambridge Blue!
+            am4core.color("#002147"),  //Oxford Blue
+            am4core.color("#AC8E35"),  //Dark Goldenrod
+            am4core.color("#7D544F"),  //Tuscan Red
+            am4core.color("#615019"),  //Field Drab
+            am4core.color("#555555"),  //Davy's Grey
+        ];
+        this.series.colors.step = 1;
+        ////////////
 
-        // Override some hover state properties
+        // Override some hover state properties on slice and its label
         let hs = this.series.slices.template.states.getKey("hover");
-        hs.properties.scale = 1.2;
+        //hs.properties.scale = 1.2;
         hs.properties.fillOpacity = 0.5;
         hs.properties.stroke = this.highlightStrokeColor;
         hs.properties.strokeWidth = 3;
 
+        let as = this.series.slices.template.states.getKey("active");
+        as.properties.fill = am4core.color("red");
+        as.properties.fillOpacity = 1;
+        as.properties.stroke = am4core.color("red");
+        as.properties.strokeWidth = 4;
+        as.properties.shiftRadius = 0.4;
+        hs.properties.strokeWidth = 5;
 
-        let aliasActiveState = this.series.slices.template.states.create("aliasActive");
-        aliasActiveState.properties.fill = this.activeColor;
-        aliasActiveState.properties.fillOpacity = 1;
-        aliasActiveState.properties.stroke = am4core.color("red");
-        aliasActiveState.properties.strokeWidth = 4;
-        aliasActiveState.properties.shiftRadius = 0.4;
-        aliasActiveState.properties.strokeOpacity = 1;
+        let is = this.series.slices.template.states.getKey("default");
+        is.properties.fillOpacity = 0.7;
+        is.properties.strokeWidth = 0;
+
+        let hsl = this.series.labels.template.states.create("hover");
+        hsl.properties.fill = this.highlightStrokeColor;
+
+        let asl = this.series.labels.template.states.create("aliasActive");
+        asl.properties.fill = this.highlightStrokeColor;
+
+        let isl = this.series.labels.template.states.create("aliasDefault");
+        //isl.properties.fill = this.highlightStrokeColor;
 
         
-        let aliasInactiveState = this.series.slices.template.states.create("aliasInactive");
-        //aliasInactiveState.properties.fill = this.inactiveColor;
-        aliasInactiveState.properties.fillOpacity = 0.5;
-        aliasInactiveState.properties.stroke = am4core.color("white");
-        aliasInactiveState.properties.strokeWidth = 1;
-
-        // let as1 = this.series.slices.template.states.getKey("active");
-        // as1.properties.shiftRadius = 0.4;
-        // as1.properties.strokeWidth = 2;
-        // as1.properties.strokeOpacity = 1;
-        // as1.properties.fillOpacity = 1;
-
-        // Custom states 
-            // var disabledState = series.slices.template.states.create("disabled");
-            // disabledState.properties.fill = am4core.color("#000");
-            // disabledState.properties.fillOpacity = 0.1;
-            // disabledState.properties.shiftRadius = 0;
-            // disabledState.properties.scale = 1;
-            // disabledState.properties.hoverable = false;
-            // disabledState.properties.clickable = false;
-
-
-
-
-        // Put a thick border around each Slice
-        // this.series.slices.template.stroke = am4core.color("#4a2abb");
-        // this.series.slices.template.strokeWidth = 3;
-        // this.series.slices.template.strokeOpacity = 1;
-        // this.series.slices.template.fillOpacity = 1;
-        // this.series.labels.template.disabled = false;
-        // this.series.ticks.template.disabled = false;
-
         //curved labels
         // this.series.alignLabels = false;
         // this.series.labels.template.bent = true;
@@ -166,18 +156,7 @@ class pieChartWidget {
 
         //_pieChart.legend = new am4charts.Legend();
 
-        ////////// COLORS
-        this.series.colors.list = [
-            am4core.color("#A3C1AD"),  //Cambridge Blue!
-            am4core.color("#002147"),  //Oxford Blue
-            am4core.color("#AC8E35"),  //Dark Goldenrod
-            am4core.color("#7D544F"),  //Tuscan Red
-            am4core.color("#615019"),  //Field Drab
-            am4core.color("#555555"),  //Davy's Grey
-        ];
-        ////////////
-
-        //Label: total of selected slices
+        //totalLabel: total of selected slices
         var container = new am4core.Container();
         container.parent = this.series;
         container.horizontalCenter = "middle";
@@ -185,8 +164,6 @@ class pieChartWidget {
         //container.width = am4core.percent(10) / Math.sqrt(2);
         //container.background.fill = am4core.color("white");
         //container.fill = am4core.color("white");
-        
-
         this.totalLabel.parent = container;
         this.totalLabel.text = this.total.toString();
         this.totalLabel.fill = am4core.color("red");
@@ -215,9 +192,6 @@ class pieChartWidget {
         // this.label.fontFamily = "Times";
         // this.label.fontWeight = "bold";
 
-        
-
-
     } // end initPieChart
 
     setEvents(): void {
@@ -226,17 +200,17 @@ class pieChartWidget {
             //holdClassThisContext._hitFlag = true;
             //NB  Active flag has changed on the hit event (before this code is reached)
             let slice = ev.target;
+            let label = slice._dataItem._label;
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
-            console.log("hit slice is active", slice.isActive);
             if (!slice.isActive) {
                 holdClassThisContext.total = holdClassThisContext.total - hitValue;
                 holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
-                //slice.setState("aliasInactive");
+                label.setState("aliasDefault");
             } else {
                 holdClassThisContext.total = holdClassThisContext.total + hitValue;
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
-                //slice.setState("aliasActive");
+                slice.setState("aliasActive");
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
             // holdClassThisContext._lineChartWidget.updateDataRequest();
@@ -244,15 +218,15 @@ class pieChartWidget {
 
         // this.series.slices.template.events.on("over", function (ev) {
         //     let slice = ev.target;
-        //     slice.setState("highlight");
-        //     });
+        //     //slice.setState("hover");
+        // });
 
         // this.series.slices.template.events.on("out", function (ev) {
         //     let slice = ev.target;
         //     if (slice.isActive) {
-        //         slice.setState("aliasActive");
+        //         slice.setState("active");
         //     } else {
-        //         slice.setState("aliasInactive");
+        //         slice.setState("default");
         //     }
         // };
 
@@ -260,13 +234,15 @@ class pieChartWidget {
         //Propogate hover and hit events on a pieseries label to the underlying slice
         this.series.labels.template.events.on("over", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
-            parentSlice.dispatchImmediately("over");
-            //parentSlice.isHover = true;
+            parentSlice.setState("hover");
         });
         this.series.labels.template.events.on("out", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
-            parentSlice.dispatchImmediately("out");
-            //parentSlice.isHover = false;
+            if (parentSlice.isActive) {
+                ev.target.setState("aliasActive");
+            } else {
+                ev.target.setState("aliasDefault");
+            }
         });
         this.series.labels.template.events.on("hit", function (ev) {
             let parentSlice = ev.target._dataItem._slice;

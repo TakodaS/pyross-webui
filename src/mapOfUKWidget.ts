@@ -160,16 +160,22 @@ class mapOfUKWidget {
         // Disable pan and zoom comtrols
         this._mapChart.smallMap.draggable = false;
         this._mapChart.smallMap.resizable = false;
-        //this._mapChart.smallMap.zIndex = 10000;
+        //this._mapChart.smallMap.zIndex = 1000;
         this._mapChart.smallMap.rectangle.strokeWidth = 0;
         this._mapChart.smallMap.scale = 1;
         this._mapChart.smallMap.isMeasured = false;
         this._mapChart.smallMap.x = am4core.percent(75);
         //this._mapChart.smallMap.horizontalCenter = "middle";
-        this._mapChart.smallMap.y = am4core.percent(46);;
+        this._mapChart.smallMap.y = am4core.percent(46);
+        //this._mapChart.smallMap.rectangle.fill = am4core.color("#f00", 0);
+        //this._mapChart.smallMap.rectangle.fillOpacity = 0;
+        this._mapChart.smallMap.background.fill = am4core.color("#f00", 0);
+        //this._mapChart.smallMap.background.fill = am4core.color("red");
+        //this._mapChart.smallMap.background.clickable = false;
+        //this._mapChart.smallMap.background.hoverable = false;
+        //this._mapChart.smallMap.rectangle.hoverable = false;
+
         
-        //this._mapChart.smallMap.rectangle.zIndex = -100;
-       //this._mapChart.smallMap.valign = "middle";
         
 
         let smallSeries = this._mapChart.smallMap.series.getIndex(0);
@@ -177,8 +183,6 @@ class mapOfUKWidget {
         //smallTemplate.stroke = smallSeries.mapPolygons.template.fill;
         this.smallTemplate.strokeWidth = 0;
         this.smallTemplate.fill = this.activeColor;
-        //smallTemplate.polygon.fill = am4core.color("tan");
-        // smallTemplate.polygon.fillOpacity = 1;
     } //end initSmallMap
 
     
