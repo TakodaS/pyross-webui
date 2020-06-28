@@ -84,7 +84,7 @@ class mapOfUKWidget {
 
         //Make more space for scaling
         this._mapChart.scale = 1.15;
-        this._mapChart.x = am4core.percent(-9)
+        this._mapChart.x = am4core.percent(-12)
         this._mapChart.y = am4core.percent(-15)
 
         // Create map polygon series  (UK minus Ireland)
@@ -164,7 +164,7 @@ class mapOfUKWidget {
         this._mapChart.smallMap.rectangle.strokeWidth = 0;
         this._mapChart.smallMap.scale = 1;
         this._mapChart.smallMap.isMeasured = false;
-        this._mapChart.smallMap.x = am4core.percent(77);
+        this._mapChart.smallMap.x = am4core.percent(75);
         //this._mapChart.smallMap.horizontalCenter = "middle";
         this._mapChart.smallMap.y = am4core.percent(46);;
         
@@ -192,7 +192,7 @@ class mapOfUKWidget {
             holdClassThisContext._hitFlag = true;
             let mappoly = ev.target;
             let data = mappoly.dataItem.dataContext;
-
+            console.log("MAP ON HIT is active?", mappoly.isActive);
             mappoly.isActive = !mappoly.isActive;
             if (mappoly.isActive) {
                 holdClassThisContext._selectedCounties.add(data.id);

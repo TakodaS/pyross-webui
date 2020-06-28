@@ -16,13 +16,13 @@
       
    body {
     background-color: rgb(251, 251, 253);
-    margin: 10px;
+    //margin: 10px;
    }
   
    .item {
     border: 0px solid #87b5ff;
     //border: 5px solid #87b5ff;
-    border-radius: 3px;
+    border-radius: 30px;
     font-size: 1.5em;
     font-family: sans-serif;
     font-weight: bold;
@@ -32,12 +32,12 @@
 
    .container {
     display: grid;
-    height: 100vh;
-    gap: 0.2rem;
+    height: 98.235vh;
+    //gap: 0.2rem;
     grid-template-columns:  repeat(16, 1fr);
     grid-template-rows: repeat(16, 1fr);
-    /* align-items: stretch;  */
-    /* justify-items: center; */
+    /* align-items: center; 
+    justify-items: center; */
    }
 
 /* .grid {
@@ -58,14 +58,14 @@
 
 /* Pie Chart */
 .item2 {
-  grid-column: 3 / 10;
+  grid-column: 4 / 10;
   grid-row: 2 / 7;
   z-index: 1;
 }
 
 /* UK Map */
 .item3 {
-  grid-column: 1 / 7;
+  grid-column: 1 / 8;
   grid-row: 1 / 17;
   /* align-self: stretch; */
 }

@@ -19,10 +19,7 @@ class pieChartWidget {
     private _lineChartWidget: lineChartWidget;
     private totalLabel: am4core.Label = new am4core.Label();
     private total: number = 0;
-    private inactiveColor: any = am4core.color("black");;
-    private activeColor: any = am4core.color("red");;
-    //private highlightColor: any;
-    private highlightStrokeColor: any = am4core.color("black");
+    //private highlightStrokeColor: any = am4core.color("black");
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
@@ -82,42 +79,19 @@ class pieChartWidget {
         //this._pieChart.align = "center";
         //this._pieChart.valign;
         this._pieChart.radius = am4core.percent(90);
+        this._pieChart.innerRadius = am4core.percent(0);
         //this._pieChart.y = am4core.percent(-30);
+
         this.series = this._pieChart.series.push(new am4charts.PieSeries());
         this.series.dataFields.value = "value";
         this.series.dataFields.radiusValue = "value";
         this.series.dataFields.category = "ageRange";
-        this.series.slices.template.cornerRadius = 6;
         this.series.colors.step = 1;
-        this._pieChart.innerRadius = am4core.percent(0);
-
-        
-
         this.series.hiddenState.properties.endAngle = -90;
 
-        this.series.labels.template.text = "{ageRange}";
+        this.series.slices.template.cornerRadius = 6;
+        this.series.slices.template.fillOpacity = 0.5;
         this.series.slices.template.tooltipText = "{value}";
-
-        let as1 = this.series.slices.template.states.getKey("active");
-        as1.properties.shiftRadius = 0.4;
-        as1.properties.strokeWidth = 2;
-        as1.properties.strokeOpacity = 1;
-        as1.properties.fillOpacity = 1;
-
-        // Put a thick border around each Slice
-        this.series.slices.template.stroke = am4core.color("#4a2abb");
-        this.series.slices.template.strokeWidth = 3;
-        this.series.slices.template.strokeOpacity = 1;
-        this.series.slices.template.fillOpacity = 1;
-        this.series.labels.template.disabled = false;
-        this.series.ticks.template.disabled = false;
-
-        //curved labels
-        // this.series.alignLabels = false;
-        // this.series.labels.template.bent = true;
-        // this.series.labels.template.radius = -10;
-        // this.series.labels.template.padding(0, 0, 0, 0);
-        // this.series.labels.template.fill = am4core.color("#000");
 
         //rotated labels
         this.series.ticks.template.disabled = true;
@@ -126,11 +100,69 @@ class pieChartWidget {
         this.series.labels.template.radius = am4core.percent(0);
         this.series.labels.template.fill = am4core.color("black");
         this.series.labels.template.relativeRotation = 90;
-
         //Fonts
         this.series.labels.template.fontSize = 20;
         this.series.labels.template.fontFamily = "Times";
         this.series.labels.template.fontWeight = "bold";
+
+        
+        
+
+        // Override some hover state properties
+        let hs = this.series.slices.template.states.getKey("hover");
+        hs.properties.scale = 1.2;
+        hs.properties.fillOpacity = 0.5;
+        hs.properties.stroke = this.highlightStrokeColor;
+        hs.properties.strokeWidth = 3;
+
+
+        let aliasActiveState = this.series.slices.template.states.create("aliasActive");
+        aliasActiveState.properties.fill = this.activeColor;
+        aliasActiveState.properties.fillOpacity = 1;
+        aliasActiveState.properties.stroke = am4core.color("red");
+        aliasActiveState.properties.strokeWidth = 4;
+        aliasActiveState.properties.shiftRadius = 0.4;
+        aliasActiveState.properties.strokeOpacity = 1;
+
+        
+        let aliasInactiveState = this.series.slices.template.states.create("aliasInactive");
+        //aliasInactiveState.properties.fill = this.inactiveColor;
+        aliasInactiveState.properties.fillOpacity = 0.5;
+        aliasInactiveState.properties.stroke = am4core.color("white");
+        aliasInactiveState.properties.strokeWidth = 1;
+
+        // let as1 = this.series.slices.template.states.getKey("active");
+        // as1.properties.shiftRadius = 0.4;
+        // as1.properties.strokeWidth = 2;
+        // as1.properties.strokeOpacity = 1;
+        // as1.properties.fillOpacity = 1;
+
+        // Custom states 
+            // var disabledState = series.slices.template.states.create("disabled");
+            // disabledState.properties.fill = am4core.color("#000");
+            // disabledState.properties.fillOpacity = 0.1;
+            // disabledState.properties.shiftRadius = 0;
+            // disabledState.properties.scale = 1;
+            // disabledState.properties.hoverable = false;
+            // disabledState.properties.clickable = false;
+
+
+
+
+        // Put a thick border around each Slice
+        // this.series.slices.template.stroke = am4core.color("#4a2abb");
+        // this.series.slices.template.strokeWidth = 3;
+        // this.series.slices.template.strokeOpacity = 1;
+        // this.series.slices.template.fillOpacity = 1;
+        // this.series.labels.template.disabled = false;
+        // this.series.ticks.template.disabled = false;
+
+        //curved labels
+        // this.series.alignLabels = false;
+        // this.series.labels.template.bent = true;
+        // this.series.labels.template.radius = -10;
+        // this.series.labels.template.padding(0, 0, 0, 0);
+        // this.series.labels.template.fill = am4core.color("#000");
 
         //_pieChart.legend = new am4charts.Legend();
 
@@ -143,10 +175,6 @@ class pieChartWidget {
             am4core.color("#615019"),  //Field Drab
             am4core.color("#555555"),  //Davy's Grey
         ];
-        this.inactiveColor = am4core.color("#A3C1AD"); //Cambidge Blue!
-        this.activeColor = am4core.color("#002147");  //Oxford Blue
-        //this.highlightColor = am4core.color("yellow");
-        this.highlightStrokeColor = am4core.color("black");
         ////////////
 
         //Label: total of selected slices
@@ -187,56 +215,59 @@ class pieChartWidget {
         // this.label.fontFamily = "Times";
         // this.label.fontWeight = "bold";
 
-        // Create highlight state and set alternative fill color (alias for hover)
-        // This is a duplicate of hover, but is needed because hover contains additional hidden logic
-        //These are all custom states.
-        let highlightState = this.series.states.create("highlight");
-        highlightState.properties.fillOpacity = 0.6;
-        highlightState.properties.stroke = this.highlightStrokeColor;
-        highlightState.properties.strokeWidth = 3;
-
-        let aliasActiveState = this.series.states.create("aliasActive");
-        aliasActiveState.properties.fill = this.activeColor;
-        aliasActiveState.properties.fillOpacity = 1;
-        aliasActiveState.properties.stroke = am4core.color("white");
-        aliasActiveState.properties.strokeWidth = 1;
         
-        let aliasInactiveState = this.series.states.create("aliasInactive");
-        aliasInactiveState.properties.fill = this.inactiveColor;
-        aliasInactiveState.properties.fillOpacity = 1;
-        aliasInactiveState.properties.stroke = am4core.color("white");
-        aliasInactiveState.properties.strokeWidth = 1;
 
 
     } // end initPieChart
 
     setEvents(): void {
+        ///////////////////////// Pie Chart Slice Events ////////////////
         this.series.slices.template.events.on("hit", function (ev) {
             //holdClassThisContext._hitFlag = true;
+            //NB  Active flag has changed on the hit event (before this code is reached)
             let slice = ev.target;
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
-            if (!ev.target.isActive) {
+            console.log("hit slice is active", slice.isActive);
+            if (!slice.isActive) {
                 holdClassThisContext.total = holdClassThisContext.total - hitValue;
                 holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
+                //slice.setState("aliasInactive");
             } else {
                 holdClassThisContext.total = holdClassThisContext.total + hitValue;
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
+                //slice.setState("aliasActive");
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
             // holdClassThisContext._lineChartWidget.updateDataRequest();
         }); // end event hit
 
+        // this.series.slices.template.events.on("over", function (ev) {
+        //     let slice = ev.target;
+        //     slice.setState("highlight");
+        //     });
+
+        // this.series.slices.template.events.on("out", function (ev) {
+        //     let slice = ev.target;
+        //     if (slice.isActive) {
+        //         slice.setState("aliasActive");
+        //     } else {
+        //         slice.setState("aliasInactive");
+        //     }
+        // };
+
+        ///////////////////////// Pie Chart (slice) Label Events ////////////////
         //Propogate hover and hit events on a pieseries label to the underlying slice
         this.series.labels.template.events.on("over", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
-            parentSlice.isHover = true;
+            parentSlice.dispatchImmediately("over");
+            //parentSlice.isHover = true;
         });
         this.series.labels.template.events.on("out", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
-            parentSlice.isHover = false;
+            parentSlice.dispatchImmediately("out");
+            //parentSlice.isHover = false;
         });
-
         this.series.labels.template.events.on("hit", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
             parentSlice.dispatchImmediately("hit");

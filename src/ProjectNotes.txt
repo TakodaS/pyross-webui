@@ -1,4 +1,7 @@
 
+COVID-19 UI PROJECT NOTES
+
+
 A cookie is created from one of the amcharts libraries. Take it out.
 
 check if resolvejsonmodule compiler option is now in tsc -init
@@ -7,6 +10,13 @@ even it you comment out the option, you have to also remove the created target f
 
 Make sure new build picks up uNuglified core file (toggle amcharts original core as test)
 
-//Why do vars declared within methods not propogate to entire class?
+
+TODO
+background container of smallmap NO CLICK
+actions on thest of pie chart
+rounded borders?
+fill in all charts
+better colors
+
 
 
