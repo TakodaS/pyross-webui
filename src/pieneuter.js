@@ -61,9 +61,23 @@ pieSeries.hiddenState.properties.opacity = 1;
 pieSeries.hiddenState.properties.endAngle = -90;
 pieSeries.hiddenState.properties.startAngle = -90;
 
+// Do not allow default actions on slices
 var slice = pieSeries.slices.template;
 slice.states.getKey("hover").properties.scale = 1;
 slice.states.getKey("active").properties.shiftRadius = 0;
+
+
+//rotated labels
+        pieSeries.ticks.template.disabled = true;
+        pieSeries.alignLabels = false;
+        //pieSeries.labels.template.text = "{ageRange}";
+        pieSeries.labels.template.radius = am4core.percent(-20);
+        pieSeries.labels.template.relativeRotation = 90;
+        //Fonts
+        pieSeries.labels.template.fontSize = 20;
+        pieSeries.labels.template.fontFamily = "Times";
+        pieSeries.labels.template.fontWeight = "bold";
+        pieSeries.labels.template.fill = am4core.color("black");
 
 
  pieSeries.slices.template.events.on("hit", function (ev) {
