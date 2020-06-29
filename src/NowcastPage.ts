@@ -63,8 +63,7 @@ class NowcastPage  {
         //Fake pie slice data for testing piechart and linechart
         let fakeData = [{ ageRange: "children", value: 98681 }, { ageRange: "millennials", value: 200000 },
             { ageRange: "Gen Z", value: 309963 }, { ageRange: "Baby Boomer", value: 400000 },
-            { ageRange: "Adults", value: 549963 }, { ageRange: "Snowflakes", value: 1000000 }
-        ]
+            { ageRange: "Adults", value: 549963 },       ]
         //let pieChartData = dm.getAgeData(jsdata, 100);
         let pieChartData = fakeData;
         let selectedAges: Set<string> = new Set(["children"]);

@@ -4,7 +4,6 @@
 export * as jsdata from './data/UK.json';
 export * as dm from './dataMap';
 export * as utils from './utils';
-export * as ui from './UIwidgets';
 
 
 import { NowcastPage } from "./NowcastPage";

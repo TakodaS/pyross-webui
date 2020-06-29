@@ -195,7 +195,7 @@ class pieChartWidget {
 
     } // end initPieChart
 
-    setEvents(): void {
+    private setEvents(): void {
         ///////////////////////// Pie Chart Slice Events ////////////////
         this.series.slices.template.events.on("hit", function (ev) {
             //holdClassThisContext._hitFlag = true;
@@ -216,7 +216,7 @@ class pieChartWidget {
                 label.setState("aliasActive");
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
-            // holdClassThisContext._lineChartWidget.updateDataRequest();
+		holdClassThisContext._lineChartWidget.updateDataRequest();
         }); // end event hit
 
         this.series.slices.template.events.on("over", function (ev) {

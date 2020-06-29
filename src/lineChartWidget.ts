@@ -55,6 +55,7 @@ class lineChartWidget {
     //
     public updateDataRequest() {
         //console.log("checking for changes");
+	console.log( Array.from(this.pchart.selectedAges), Array.from(this.mchart.selectedCounties));
         this._lineChart.data = dm.convertData(jsdata, "t", "S",
             Array.from(this.pchart.selectedAges), Array.from(this.mchart.selectedCounties));
         this._lineChart.invalidateData();
