@@ -20,6 +20,7 @@ class pieChartWidget {
     private totalLabel: am4core.Label = new am4core.Label();
     private total: number = 0;
     private highlightStrokeColor: any = am4core.color("red");
+    //private defaultTextStrokeColor: any = am4core.color("red");
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
@@ -118,14 +119,14 @@ class pieChartWidget {
         this.series.colors.step = 1;
         ////////////
 
-        // Override some hover state properties on slice and its label
-        let hs = this.series.slices.template.states.getKey("hover");
+        // Override some state properties on slice and its label
+        let hs = this.series.slices.template.states.create("aliasHover");
         //hs.properties.scale = 1.2;
         hs.properties.fillOpacity = 0.5;
         hs.properties.stroke = this.highlightStrokeColor;
         hs.properties.strokeWidth = 3;
 
-        let as = this.series.slices.template.states.getKey("active");
+        let as = this.series.slices.template.states.create("aliasActive");
         as.properties.fill = am4core.color("red");
         as.properties.fillOpacity = 1;
         as.properties.stroke = am4core.color("red");
@@ -133,18 +134,18 @@ class pieChartWidget {
         as.properties.shiftRadius = 0.4;
         hs.properties.strokeWidth = 5;
 
-        let is = this.series.slices.template.states.getKey("default");
+        let is = this.series.slices.template.states.create("aliasDefault");
         is.properties.fillOpacity = 0.7;
         is.properties.strokeWidth = 0;
 
-        let hsl = this.series.labels.template.states.create("hover");
+        let hsl = this.series.labels.template.states.create("aliasHover");
         hsl.properties.fill = this.highlightStrokeColor;
 
         let asl = this.series.labels.template.states.create("aliasActive");
         asl.properties.fill = this.highlightStrokeColor;
 
         let isl = this.series.labels.template.states.create("aliasDefault");
-        //isl.properties.fill = this.highlightStrokeColor;
+        isl.properties.fill = am4core.color("black");
 
         
         //curved labels
@@ -206,48 +207,52 @@ class pieChartWidget {
             if (!slice.isActive) {
                 holdClassThisContext.total = holdClassThisContext.total - hitValue;
                 holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
+                slice.setState("aliasDefault");
                 label.setState("aliasDefault");
             } else {
                 holdClassThisContext.total = holdClassThisContext.total + hitValue;
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
                 slice.setState("aliasActive");
+                label.setState("aliasActive");
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
             // holdClassThisContext._lineChartWidget.updateDataRequest();
         }); // end event hit
 
-        // this.series.slices.template.events.on("over", function (ev) {
-        //     let slice = ev.target;
-        //     //slice.setState("hover");
-        // });
+        this.series.slices.template.events.on("over", function (ev) {
+            let slice = ev.target;
+            let label = slice._dataItem._label;
+            slice.setState("aliasHover");
+            label.setState("aliasHover");
+        });
 
-        // this.series.slices.template.events.on("out", function (ev) {
-        //     let slice = ev.target;
-        //     if (slice.isActive) {
-        //         slice.setState("active");
-        //     } else {
-        //         slice.setState("default");
-        //     }
-        // };
+        this.series.slices.template.events.on("out", function (ev) {
+            let slice = ev.target;
+            let label = slice._dataItem._label;
+            // if (slice.isActive) {
+            //     slice.setState("aliasActive");
+            //     label.setState("aliasActive");
+            // } else {
+            //     slice.setState("aliasDefault");
+            //     label.setState("aliasDefault");
+            // }
+        };
 
         ///////////////////////// Pie Chart (slice) Label Events ////////////////
-        //Propogate hover and hit events on a pieseries label to the underlying slice
-        this.series.labels.template.events.on("over", function (ev) {
-            let parentSlice = ev.target._dataItem._slice;
-            parentSlice.setState("hover");
-        });
-        this.series.labels.template.events.on("out", function (ev) {
-            let parentSlice = ev.target._dataItem._slice;
-            if (parentSlice.isActive) {
-                ev.target.setState("aliasActive");
-            } else {
-                ev.target.setState("aliasDefault");
-            }
-        });
+        //Propogate hover and hit events on a pieseries label to the parent slice
         this.series.labels.template.events.on("hit", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
             parentSlice.dispatchImmediately("hit");
         });
+        this.series.labels.template.events.on("over", function (ev) {
+            let parentSlice = ev.target._dataItem._slice;
+            parentSlice.dispatchImmediately("over");
+        });
+        this.series.labels.template.events.on("out", function (ev) {
+            let parentSlice = ev.target._dataItem._slice;
+            parentSlice.dispatchImmediately("out");
+        });
+        
     } //end setEvents
 
 } // end class pieChart
