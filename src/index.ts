@@ -9,12 +9,3 @@ export * as utils from './utils';
 import { NowcastPage } from "./NowcastPage";
 let ncPage = new NowcastPage();
 
-
-//Class trials
-import { myRec } from "./myRec";
-var r1 = new myRec(2, 10);
-var v1 = r1.area;
-console.log("my rectangle is:", v1)
-
-
-
