@@ -10,6 +10,7 @@ am4core.useTheme(am4themes_animated);
 import { mapOfUKWidget } from "./mapOfUKWidget";
 import { pieChartWidget } from "./pieChartWidget";
 import { lineChartWidget } from "./lineChartWidget";
+import { DataClass } from "./DataClass";
 import { dm } from "./index";
 import { jsdata } from "./index";
 
@@ -58,19 +59,22 @@ class NowcastPage  {
         // outputContainer.height = am4core.percent(100);
 
         //Create Nowcast (NC) Widgets
-        this.mchart = new mapOfUKWidget();
+	    this.mchart = new mapOfUKWidget();
+	    this.dclass = new DataClass(jsdata);
+	    console.log(this.dclass.ages);
 
         //Fake pie slice data for testing piechart and linechart
         let fakeData = [{ ageRange: "children", value: 98681 }, { ageRange: "millennials", value: 200000 },
             { ageRange: "Gen Z", value: 309963 }, { ageRange: "Baby Boomer", value: 400000 },
             { ageRange: "Adults", value: 549963 },       ]
+	fakeData = this.dclass.agesForPiechart;
         //let pieChartData = dm.getAgeData(jsdata, 100);
         let pieChartData = fakeData;
-        let selectedAges: Set<string> = new Set(["children"]);
+        let selectedAges: Set<string> = new Set();
         let selectedCounties: Set<string> = new Set();
 
         this.pchart = new pieChartWidget("piechart", pieChartData, selectedAges);
-        this.lchart = new lineChartWidget("linechart", this.mchart, this.pchart );
+        this.lchart = new lineChartWidget("linechart", this.mchart, this.pchart, this.dclass);
         
         this.mchart.lineChartWidget = this.lchart;
         this.pchart.lineChartWidget = this.lchart;

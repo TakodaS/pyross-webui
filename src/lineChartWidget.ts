@@ -60,9 +60,10 @@ class lineChartWidget {
 	public updateDataRequest() {
 		//console.log("checking for changes");
 		//	this.dclass.keys = ["GB-CM", "I", "Adults"];
-		this.dclass.ages = this.pchart.selectedAges;
-		this.dclass.counties = this.mchart.selectedCounties;
-		this._lineChart.data = this.dclass.returnData("t", "S");
+		this.dclass.selectedAges = this.pchart.selectedAges;
+		this.dclass.selectedCounties = this.mchart.selectedCounties;
+		this._lineChart.data = this.dclass.data;
+
 		this._lineChart.invalidateData();
 	}
 	//
@@ -105,10 +106,9 @@ class lineChartWidget {
 
 		// Create value axis
 		let yAxis = this._lineChart.yAxes.push(new am4charts.ValueAxis());
-		this._lineChart.data = dm.convertData(jsdata, "t", "S", Array.from(this.pchart.selectedAges), ["all"]);
 		var series1 = this._lineChart.series.push(new am4charts.LineSeries());
-		series1.dataFields.valueX = "x";
-		series1.dataFields.valueY = "y";
+		series1.dataFields.valueX = "t";
+		series1.dataFields.valueY = "S";
 
 
 

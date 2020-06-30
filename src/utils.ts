@@ -1,3 +1,4 @@
+var math = require('mathjs');
 //Utilities for the webpage
 export function eqSet(as, bs) {
     if (as.size !== bs.size) return false;
@@ -20,3 +21,81 @@ export function arraysEqual(a, b) {
   }
   return true;
 }
+
+export function powerSet( list ){
+    var perms = [],
+        listSize = list.length,
+        combinationsCount = (1 << listSize),
+        combination;
+
+    for (var i = 1; i < combinationsCount ; i++ ){
+        var combination = [];
+        for (var j=0;j<listSize;j++){
+            if ((i & (1 << j))){
+                combination.push(list[j]);
+            }
+        }
+        perms.push(combination);
+    }
+    return perms.reverse();
+}
+
+export function  permutator(inputArr) {
+  let result = [];
+
+  const permute = (arr, m = []) => {
+    if (arr.length === 0) {
+      result.push(m)
+    } else {
+      for (let i = 0; i < arr.length; i++) {
+        let curr = arr.slice();
+        let next = curr.splice(i, 1);
+        permute(curr.slice(), m.concat(next))
+     }
+   }
+ }
+
+ permute(inputArr)
+
+ return result;
+}
+
+export function permPowerSet(inputArr){
+	let result = [];
+	let s1 = this.powerSet(inputArr);
+	let s2;
+	for (let s of s1) {
+		s2 = this.permutator(s);
+		for (let p of s2){
+			result.push(p);
+		}
+	}
+	return result;
+}
+
+export function intersect(a, b) {
+    var t;
+    if (b.length > a.length) t = b, b = a, a = t; // indexOf to loop over shorter
+    return a.filter(function (e) {
+        return b.indexOf(e) > -1;
+    });
+}
+
+export function addDictionaries(a, b, fixed = ["t"]){
+	let k1 = Object.keys(a);
+	let k2 = Object.keys(b);
+	console.log(k1,k2)
+	let intersect = this.intersect(k1,k2);
+	let outdict = {};
+	for (let ob in intersect){
+		if (!fixed.includes(ob)){
+			//	console.log(intersect,a[ob],a, ob);
+			outdict[ob] = math.add(a[ob], b[ob]);
+		}
+		else {
+			outdict[ob] = a[ob];
+		}
+	}
+	return outdict;
+}
+

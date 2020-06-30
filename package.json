@@ -33,6 +33,7 @@
     "Math": "^0.0.1-security",
     "cross-env": "^7.0.2",
     "gh-pages": "^3.0.0",
+    "jsonq": "^1.2.0",
     "mathjs": "^7.0.1",
     "parcel-bundler": "^1.12.4"
   }
