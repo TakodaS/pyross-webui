@@ -18,6 +18,7 @@ class DataClass {
 	private _formattedData: List<Dictionary>;
 	private _filteredData: Dictionary<any>;
 	private _jqdata: Dictionary<any>;
+	private _combinedData: Dictionary<any>;
 
 
 	constructor(data: any) {
@@ -145,19 +146,18 @@ class DataClass {
 
 	private function combineData(){
 		let fdat = this._filteredData;
-		console.log(Object.keys(fdat));
 		let totalDat = {};
 		let oldOb;
 		for (let ob of Object.keys(fdat)){
-			console.log(ob);
 			if (typeof oldOb === "undefined"){
 				oldOb = fdat[ob];
 			}
-			oldOb = utils.addDictionaries(fdat[ob], oldOb);
+			if (Object.keys(fdat).length>1) {
+				oldOb = utils.addDictionaries(fdat[ob], oldOb);
+			}
 		}
-
-		
-
+		this._combinedData = oldOb;
+		console.log(this._combinedData);
 	}
 
 	private function convertData(){
