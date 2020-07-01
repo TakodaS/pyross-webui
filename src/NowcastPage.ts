@@ -61,7 +61,6 @@ class NowcastPage  {
         //Create Nowcast (NC) Widgets
 	    this.mchart = new mapOfUKWidget();
 	    this.dclass = new DataClass(jsdata);
-	    console.log(this.dclass.ages);
 
         //Fake pie slice data for testing piechart and linechart
         let fakeData = [{ ageRange: "children", value: 98681 }, { ageRange: "millennials", value: 200000 },
