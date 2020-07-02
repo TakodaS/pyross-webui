@@ -83,7 +83,7 @@ class pieChartWidget {
         //this._pieChart.height = am4core.percent(100);
         //this._pieChart.align = "center";
         //this._pieChart.valign;
-        this._pieChart.radius = am4core.percent(90);
+        this._pieChart.radius = am4core.percent(70);
         this._pieChart.innerRadius = am4core.percent(0);
         //this._pieChart.y = am4core.percent(-30);
 
@@ -116,6 +116,7 @@ class pieChartWidget {
         this.series.labels.template.fontFamily = "Times";
         this.series.labels.template.fontWeight = "bold";
         this.series.labels.template.fill = am4core.color("black");
+        this.series.labels.template.zIndex = 100;
 
         // Override some state properties on slice and its label
         let hs = this.series.slices.template.states.create("aliasHover");

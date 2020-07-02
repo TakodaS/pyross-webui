@@ -84,8 +84,8 @@ class mapOfUKWidget {
 
         //Make more space for scaling
         this._mapChart.scale = 1.15;
-        this._mapChart.x = am4core.percent(-12)
-        this._mapChart.y = am4core.percent(-15)
+        this._mapChart.x = am4core.percent(-12);
+        this._mapChart.y = am4core.percent(-15);
 
         // Create map polygon series  (UK minus Ireland)
         this.polygonSeries = this._mapChart.series.push(new am4maps.MapPolygonSeries());
@@ -166,7 +166,8 @@ class mapOfUKWidget {
         this._mapChart.smallMap.isMeasured = false;
         this._mapChart.smallMap.x = am4core.percent(75);
         //this._mapChart.smallMap.horizontalCenter = "middle";
-        this._mapChart.smallMap.y = am4core.percent(46);
+        this._mapChart.smallMap.y = am4core.percent(48);
+        //this._mapChart.smallMap.zIndex = -1000;
         //this._mapChart.smallMap.rectangle.fill = am4core.color("#f00", 0);
         //this._mapChart.smallMap.rectangle.fillOpacity = 0;
         this._mapChart.smallMap.background.fill = am4core.color("#f00", 0);

@@ -1,9 +1,12 @@
 // AmCharts Imports
 import * as am4core from "@amcharts/amcharts4/core";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import am4themes_material from "@amcharts/amcharts4/themes/material";
 //import am4themes_amchartsdark from "@amcharts/amcharts4/themes/amchartsdark";
 
+
 am4core.useTheme(am4themes_animated);
+am4core.useTheme(am4themes_material);
 //am4core.useTheme(am4themes_amchartsdark);
 
 // Local imports
