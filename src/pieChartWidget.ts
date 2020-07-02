@@ -26,7 +26,6 @@ class pieChartWidget {
     private overSlice = false;
     private BoverSlice = false;
     private BoverLabel = false;
-    private isSelected = false;
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
@@ -140,7 +139,7 @@ class pieChartWidget {
         omg2.properties.strokeWidth = 3;
 
 
-        let as = this.series.slices.template.states.create("aliasActive");
+        let as = this.series.slices.template.states.create("active");
         as.properties.fill = am4core.color("red");
         as.properties.fillOpacity = 1;
         as.properties.stroke = am4core.color("red");
@@ -163,7 +162,7 @@ class pieChartWidget {
         isl.properties.fill = am4core.color("black");
 
         // Disable the active/default behaviours of pie chart
-        this.series.slices.template.togglable = false;
+        //this.series.slices.template.togglable = false;
 
         // var colorSet = new am4core.ColorSet();
         // colorSet.list = [
@@ -237,12 +236,11 @@ class pieChartWidget {
             //holdClassThisContext._hitFlag = true;
             //NB  Active flag has changed on the hit event (before this code is reached)
             let slice = ev.target;
-            console.log("SLICE is active", slice.isActive);
-            holdClassThisContext.isSelected = !holdClassThisContext.isSelected
+            console.log("in slice HIT", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
             let label = slice._dataItem._label;
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
-            if (!holdClassThisContext.isSelected) {
+            if (!slice.isActive) {
                 holdClassThisContext.total = holdClassThisContext.total - hitValue;
                 holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
                 slice.setState("aliasInactive");
@@ -252,7 +250,7 @@ class pieChartWidget {
                 slice.setState("aliasActive");
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
-            holdClassThisContext._lineChartWidget.updateDataRequest();
+            //holdClassThisContext._lineChartWidget.updateDataRequest();
             holdClassThisContext.overSlice = false;
             holdClassThisContext.overLabel = false;
         }); // end event hit
@@ -260,6 +258,7 @@ class pieChartWidget {
         this.series.slices.template.events.on("over", function (ev) {
             let slice = ev.target;
             let label = slice._dataItem._label;
+            console.log("in slice over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
             holdClassThisContext.setSliceAndLabelHover(1, slice, label);
         });
 
@@ -273,7 +272,7 @@ class pieChartWidget {
 
             //This allows the transition from slice to label to minimize the "flash" of the default color
             setTimeout(function () {
-                console.log("in slice out", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+                console.log("in slice out timeout", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
                 if (!holdClassThisContext.overLabel) {
                     holdClassThisContext.setSliceAndLabelHover(0, slice, label);
                 } else {
@@ -291,7 +290,6 @@ class pieChartWidget {
         });
         this.series.labels.template.events.on("over", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
-            parentSlice.dispatchImmediately("over");
             holdClassThisContext.overLabel = true;
             console.log("in label over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
 
