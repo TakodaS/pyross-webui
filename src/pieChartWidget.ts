@@ -22,10 +22,10 @@ class pieChartWidget {
     private highlightStrokeColor: any = am4core.color("red");
     //private defaultTextStrokeColor: any = am4core.color("red");
     //Flags for controlling the slice properties
-    private overLabel = false;
-    private overSlice = false;
-    private BoverSlice = false;
-    private BoverLabel = false;
+    // private overLabel = false;
+    // private overSlice = false;
+    // private BoverSlice = false;
+    // private BoverLabel = false;
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
@@ -101,10 +101,11 @@ class pieChartWidget {
 
 
 
-        // this.series.slices.template.cornerRadius = 6;
-        // this.series.slices.template.fillOpacity = 0.7;
-        // this.series.slices.template.strokeWidth = 0;
-        // this.series.slices.template.tooltipText = "{value}";
+        this.series.slices.template.cornerRadius = 6;
+        this.series.slices.template.fillOpacity = 0.7;
+        this.series.slices.template.strokeWidth = 0;
+        //this.series.slices.template.tooltipText = "{ageRange}:{value}";
+        this.series.slices.template.tooltipText = "";
 
         //rotated labels
         this.series.ticks.template.disabled = true;
@@ -117,7 +118,7 @@ class pieChartWidget {
         this.series.labels.template.fontFamily = "Times";
         this.series.labels.template.fontWeight = "bold";
         this.series.labels.template.fill = am4core.color("black");
-        this.series.labels.template.zIndex = 100;
+        //this.series.labels.template.zIndex = 100;
 
         // Override some state properties on slice and its label
         let hs = this.series.slices.template.states.create("aliasHover");
@@ -128,28 +129,27 @@ class pieChartWidget {
 
         let omg = this.series.slices.template.states.create("hover");
         omg.properties.shiftRadius = 0;
-        omg.properties.scale = 1;
+        omg.properties.scale = 1.05;
         omg.properties.fillOpacity = 0.5;
         omg.properties.stroke = this.highlightStrokeColor;
-        omg.properties.strokeWidth = 3;
+        omg.properties.strokeWidth = 1;
 
         let omg2 = this.series.slices.template.states.create("default");
         omg2.properties.fillOpacity = 0.5;
-        omg2.properties.stroke = this.highlightStrokeColor;
-        omg2.properties.strokeWidth = 3;
+        //omg2.properties.stroke = am4core.color("white");
+        omg2.properties.strokeWidth = 0;
 
 
         let as = this.series.slices.template.states.create("active");
         as.properties.fill = am4core.color("red");
         as.properties.fillOpacity = 1;
-        as.properties.stroke = am4core.color("red");
-        as.properties.strokeWidth = 4;
-        as.properties.shiftRadius = 0.4;
-        hs.properties.strokeWidth = 5;
+        // as.properties.stroke = am4core.color("red");
+        // as.properties.strokeWidth = 4;
+        as.properties.shiftRadius = 0.1;
 
         let is = this.series.slices.template.states.create("aliasDefault");
         is.properties.fillOpacity = 0.7;
-        is.properties.stroke = this.highlightStrokeColor;
+        is.properties.stroke = am4core.color("white");
         is.properties.strokeWidth = 0;
 
         let hsl = this.series.labels.template.states.create("aliasHover");
@@ -236,49 +236,51 @@ class pieChartWidget {
             //holdClassThisContext._hitFlag = true;
             //NB  Active flag has changed on the hit event (before this code is reached)
             let slice = ev.target;
-            console.log("in slice HIT", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+            //console.log("in slice HIT", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
             let label = slice._dataItem._label;
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
             if (!slice.isActive) {
                 holdClassThisContext.total = holdClassThisContext.total - hitValue;
                 holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
-                slice.setState("aliasInactive");
+                slice.setState("default");
+                label.setState("aliasDefault")
             } else {
                 holdClassThisContext.total = holdClassThisContext.total + hitValue;
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
-                slice.setState("aliasActive");
+                slice.setState("active");
+                label.setState("aliasActive")
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
             //holdClassThisContext._lineChartWidget.updateDataRequest();
-            holdClassThisContext.overSlice = false;
-            holdClassThisContext.overLabel = false;
+            // holdClassThisContext.overSlice = false;
+            // holdClassThisContext.overLabel = false;
         }); // end event hit
 
         this.series.slices.template.events.on("over", function (ev) {
             let slice = ev.target;
             let label = slice._dataItem._label;
-            console.log("in slice over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-            holdClassThisContext.setSliceAndLabelHover(1, slice, label);
+            //console.log("in slice over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+            //holdClassThisContext.setSliceAndLabelHover(1, slice, label);
         });
 
         this.series.slices.template.events.on("out", function (ev) {
             let slice = ev.target;
             let label = slice._dataItem._label;
-            holdClassThisContext.overSlice = false;
-            console.log("in slice out", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-            holdClassThisContext.BoverLabel = holdClassThisContext.overLabel;
-            holdClassThisContext.BoverSlice = holdClassThisContext.overSlice;
+            // holdClassThisContext.overSlice = false;
+            // console.log("in slice out", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+            // holdClassThisContext.BoverLabel = holdClassThisContext.overLabel;
+            // holdClassThisContext.BoverSlice = holdClassThisContext.overSlice;
 
             //This allows the transition from slice to label to minimize the "flash" of the default color
-            setTimeout(function () {
-                console.log("in slice out timeout", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-                if (!holdClassThisContext.overLabel) {
-                    holdClassThisContext.setSliceAndLabelHover(0, slice, label);
-                } else {
-                    holdClassThisContext.setSliceAndLabelHover(1, slice, label);
-                }
-            }, 1);
+            // setTimeout(function () {
+            //     console.log("in slice out timeout", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+            //     if (!holdClassThisContext.overLabel) {
+            //         holdClassThisContext.setSliceAndLabelHover(0, slice, label);
+            //     } else {
+            //         holdClassThisContext.setSliceAndLabelHover(1, slice, label);
+            //     }
+            // }, 1);
 
         });//end slice out
 
@@ -290,30 +292,30 @@ class pieChartWidget {
         });
         this.series.labels.template.events.on("over", function (ev) {
             let parentSlice = ev.target._dataItem._slice;
-            holdClassThisContext.overLabel = true;
-            console.log("in label over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+            //holdClassThisContext.overLabel = true;
+            //console.log("in label over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
 
-            holdClassThisContext.setSliceAndLabelHover(1, parentSlice, ev.target);
+            //holdClassThisContext.setSliceAndLabelHover(1, parentSlice, ev.target);
         });
         this.series.labels.template.events.on("out", function (ev) {
             let label = ev.target;
             let parentSlice = ev.target._dataItem._slice;
 
-            holdClassThisContext.overLabel = false;
-            console.log("in label out", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+            // holdClassThisContext.overLabel = false;
+            // console.log("in label out", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
 
-            holdClassThisContext.BoverLabel = holdClassThisContext.overLabel;
-            holdClassThisContext.BoverSlice = holdClassThisContext.overSlice;
+            // holdClassThisContext.BoverLabel = holdClassThisContext.overLabel;
+            // holdClassThisContext.BoverSlice = holdClassThisContext.overSlice;
 
-            //This allows the transition from slice to label to minimize the "flash" of the default color
-            setTimeout(function () {
-                console.log("in label out", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-                if (!holdClassThisContext.overSlice) {
-                    holdClassThisContext.setSliceAndLabelHover(0, parentSlice, label);
-                } else {
-                    holdClassThisContext.setSliceAndLabelHover(1, parentSlice, label);
-                }
-            }, 1);
+            // //This allows the transition from slice to label to minimize the "flash" of the default color
+            // setTimeout(function () {
+            //     console.log("in label out", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
+            //     if (!holdClassThisContext.overSlice) {
+            //         holdClassThisContext.setSliceAndLabelHover(0, parentSlice, label);
+            //     } else {
+            //         holdClassThisContext.setSliceAndLabelHover(1, parentSlice, label);
+            //     }
+            // }, 1);
 
 
         });
