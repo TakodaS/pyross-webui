@@ -15,17 +15,11 @@ class pieChartWidget {
     private _pieChart: am4charts.PieChart;
     private series: am4charts.PieSeries;
     private _data: any;
-    //private _hitFlag: boolean = false;   //If a slice is clicked on or ("hit")
     private _lineChartWidget: lineChartWidget;
     private totalLabel: am4core.Label = new am4core.Label();
     private total: number = 0;
     private highlightStrokeColor: any = am4core.color("red");
-    //private defaultTextStrokeColor: any = am4core.color("red");
-    //Flags for controlling the slice properties
-    // private overLabel = false;
-    // private overSlice = false;
-    // private BoverSlice = false;
-    // private BoverLabel = false;
+
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
@@ -55,15 +49,6 @@ class pieChartWidget {
     public set selectedAges(value: Set<string>) {
         this._selectedAges = value;
     }
-    //
-    // public get hitFlag(): boolean {
-    //     let bool: boolean = this._hitFlag;
-    //     this._hitFlag = !this._hitFlag;
-    //     return bool;
-    // }
-    // public set hitFlag(value: boolean) {
-    //     this._hitFlag = value;
-    // }
     //
     public set lineChartWidget(value: lineChartWidget) {
         this._lineChartWidget = value;
@@ -121,11 +106,6 @@ class pieChartWidget {
         //this.series.labels.template.zIndex = 100;
 
         // Override some state properties on slice and its label
-        let hs = this.series.slices.template.states.create("aliasHover");
-        //hs.properties.scale = 1.2;
-        hs.properties.fillOpacity = 0.5;
-        hs.properties.stroke = this.highlightStrokeColor;
-        hs.properties.strokeWidth = 3;
 
         let omg = this.series.slices.template.states.create("hover");
         omg.properties.shiftRadius = 0;
@@ -139,7 +119,6 @@ class pieChartWidget {
         //omg2.properties.stroke = am4core.color("white");
         omg2.properties.strokeWidth = 0;
 
-
         let as = this.series.slices.template.states.create("active");
         as.properties.fill = am4core.color("red");
         as.properties.fillOpacity = 1;
@@ -147,13 +126,6 @@ class pieChartWidget {
         // as.properties.strokeWidth = 4;
         as.properties.shiftRadius = 0.1;
 
-        let is = this.series.slices.template.states.create("aliasDefault");
-        is.properties.fillOpacity = 0.7;
-        is.properties.stroke = am4core.color("white");
-        is.properties.strokeWidth = 0;
-
-        let hsl = this.series.labels.template.states.create("aliasHover");
-        hsl.properties.fill = this.highlightStrokeColor;
 
         let asl = this.series.labels.template.states.create("aliasActive");
         asl.properties.fill = this.highlightStrokeColor;
@@ -210,25 +182,8 @@ class pieChartWidget {
         this.totalLabel.fontSize = 30;
         this.totalLabel.fontFamily = "Verdana";
         this.totalLabel.fontWeight = "bold";
-
-
     } // end initPieChart
 
-
-    //Make slices and their respective labels work together (hover, active, default)
-    ///Controls to avoid "flash" 
-
-
-    private setSliceAndLabelHover(offon, slice, label) {
-        if (offon === 1) {
-            slice.setState("aliasHover");
-            //slice.setState("hover");
-            label.setState("aliasHover");
-        } else {
-            slice.setState("aliasDefault");
-            label.setState("aliasDefault");
-        }
-    }
 
     private setEvents(): void {
         ///////////////////////// Pie Chart Slice Events ////////////////
@@ -252,37 +207,18 @@ class pieChartWidget {
                 label.setState("aliasActive")
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
-            //holdClassThisContext._lineChartWidget.updateDataRequest();
-            // holdClassThisContext.overSlice = false;
-            // holdClassThisContext.overLabel = false;
+            holdClassThisContext._lineChartWidget.updateDataRequest();
         }); // end event hit
 
-        this.series.slices.template.events.on("over", function (ev) {
-            let slice = ev.target;
-            let label = slice._dataItem._label;
-            //console.log("in slice over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-            //holdClassThisContext.setSliceAndLabelHover(1, slice, label);
-        });
+        // this.series.slices.template.events.on("over", function (ev) {
+        //     let slice = ev.target;
+        //     let label = slice._dataItem._label;
+        // });
 
-        this.series.slices.template.events.on("out", function (ev) {
-            let slice = ev.target;
-            let label = slice._dataItem._label;
-            // holdClassThisContext.overSlice = false;
-            // console.log("in slice out", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-            // holdClassThisContext.BoverLabel = holdClassThisContext.overLabel;
-            // holdClassThisContext.BoverSlice = holdClassThisContext.overSlice;
-
-            //This allows the transition from slice to label to minimize the "flash" of the default color
-            // setTimeout(function () {
-            //     console.log("in slice out timeout", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-            //     if (!holdClassThisContext.overLabel) {
-            //         holdClassThisContext.setSliceAndLabelHover(0, slice, label);
-            //     } else {
-            //         holdClassThisContext.setSliceAndLabelHover(1, slice, label);
-            //     }
-            // }, 1);
-
-        });//end slice out
+        // this.series.slices.template.events.on("out", function (ev) {
+        //     let slice = ev.target;
+        //     let label = slice._dataItem._label;
+        // });//end slice out
 
         ///////////////////////// Pie Chart (slice) Label Events ////////////////
         //Propogate hit event on a pieseries label to the parent slice
@@ -290,35 +226,13 @@ class pieChartWidget {
             let parentSlice = ev.target._dataItem._slice;
             parentSlice.dispatchImmediately("hit");
         });
-        this.series.labels.template.events.on("over", function (ev) {
-            let parentSlice = ev.target._dataItem._slice;
-            //holdClassThisContext.overLabel = true;
-            //console.log("in label over", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-
-            //holdClassThisContext.setSliceAndLabelHover(1, parentSlice, ev.target);
-        });
-        this.series.labels.template.events.on("out", function (ev) {
-            let label = ev.target;
-            let parentSlice = ev.target._dataItem._slice;
-
-            // holdClassThisContext.overLabel = false;
-            // console.log("in label out", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-
-            // holdClassThisContext.BoverLabel = holdClassThisContext.overLabel;
-            // holdClassThisContext.BoverSlice = holdClassThisContext.overSlice;
-
-            // //This allows the transition from slice to label to minimize the "flash" of the default color
-            // setTimeout(function () {
-            //     console.log("in label out", "os", holdClassThisContext.BoverSlice, "ol", holdClassThisContext.BoverLabel, "NOW", "os", holdClassThisContext.overSlice, "ol", holdClassThisContext.overLabel);
-            //     if (!holdClassThisContext.overSlice) {
-            //         holdClassThisContext.setSliceAndLabelHover(0, parentSlice, label);
-            //     } else {
-            //         holdClassThisContext.setSliceAndLabelHover(1, parentSlice, label);
-            //     }
-            // }, 1);
-
-
-        });
+        // this.series.labels.template.events.on("over", function (ev) {
+        //     let parentSlice = ev.target._dataItem._slice;
+        // });
+        // this.series.labels.template.events.on("out", function (ev) {
+        //     let label = ev.target;
+        //     let parentSlice = ev.target._dataItem._slice;
+        // });
 
     } //end setEvents
 
