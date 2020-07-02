@@ -90,7 +90,7 @@ class pieChartWidget {
         // Add and configure Series
         this.series = this._pieChart.series.push(new am4charts.PieSeries());
         this.series.dataFields.value = "value";
-        this.series.dataFields.radiusValue = "value";
+        //this.series.dataFields.radiusValue = "value";
         this.series.dataFields.category = "ageRange";
 
         // This creates initial animation
@@ -234,6 +234,7 @@ class pieChartWidget {
             //holdClassThisContext._hitFlag = true;
             //NB  Active flag has changed on the hit event (before this code is reached)
             let slice = ev.target;
+            slice.isActive = !slice.isActive
             let label = slice._dataItem._label;
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
