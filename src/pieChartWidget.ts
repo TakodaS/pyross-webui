@@ -21,10 +21,12 @@ class pieChartWidget {
     private total: number = 0;
     private highlightStrokeColor: any = am4core.color("red");
     //private defaultTextStrokeColor: any = am4core.color("red");
+    //Flags for controlling the slice properties
     private overLabel = false;
     private overSlice = false;
     private BoverSlice = false;
     private BoverLabel = false;
+    private isSelected = false;
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
         this.name = name;
@@ -83,9 +85,9 @@ class pieChartWidget {
         //this._pieChart.height = am4core.percent(100);
         //this._pieChart.align = "center";
         //this._pieChart.valign;
-        this._pieChart.radius = am4core.percent(70);
+        this._pieChart.radius = am4core.percent(60);
         this._pieChart.innerRadius = am4core.percent(0);
-        //this._pieChart.y = am4core.percent(-30);
+        //this._pieChart.x = am4core.percent(-5);
 
         // Add and configure Series
         this.series = this._pieChart.series.push(new am4charts.PieSeries());
@@ -235,18 +237,19 @@ class pieChartWidget {
             //holdClassThisContext._hitFlag = true;
             //NB  Active flag has changed on the hit event (before this code is reached)
             let slice = ev.target;
-            slice.isActive = !slice.isActive
+            console.log("SLICE is active", slice.isActive);
+            holdClassThisContext.isSelected = !holdClassThisContext.isSelected
             let label = slice._dataItem._label;
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
-            if (!slice.isActive) {
+            if (!holdClassThisContext.isSelected) {
                 holdClassThisContext.total = holdClassThisContext.total - hitValue;
                 holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
-                //setSliceAndLabelHover(0, slice, label);
+                slice.setState("aliasInactive");
             } else {
                 holdClassThisContext.total = holdClassThisContext.total + hitValue;
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
-                //setSliceAndLabelHover(0, slice, label);
+                slice.setState("aliasActive");
             }
             holdClassThisContext.totalLabel.text = holdClassThisContext.total.toString();
             holdClassThisContext._lineChartWidget.updateDataRequest();

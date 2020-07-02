@@ -84,7 +84,7 @@ class mapOfUKWidget {
 
         //Make more space for scaling
         this._mapChart.scale = 1.15;
-        this._mapChart.x = am4core.percent(-12);
+        this._mapChart.x = am4core.percent(-20);
         this._mapChart.y = am4core.percent(-15);
 
         // Create map polygon series  (UK minus Ireland)
@@ -164,9 +164,9 @@ class mapOfUKWidget {
         this._mapChart.smallMap.rectangle.strokeWidth = 0;
         this._mapChart.smallMap.scale = 1;
         this._mapChart.smallMap.isMeasured = false;
-        this._mapChart.smallMap.x = am4core.percent(75);
+        this._mapChart.smallMap.x = am4core.percent(78);
         //this._mapChart.smallMap.horizontalCenter = "middle";
-        this._mapChart.smallMap.y = am4core.percent(48);
+        this._mapChart.smallMap.y = am4core.percent(50);
         //this._mapChart.smallMap.zIndex = -1000;
         //this._mapChart.smallMap.rectangle.fill = am4core.color("#f00", 0);
         //this._mapChart.smallMap.rectangle.fillOpacity = 0;
@@ -208,7 +208,7 @@ class mapOfUKWidget {
             }
             //aliasCheckIfAllCountriesAreSame();
             holdClassThisContext.checkIfAllCountiesAreSame();
-            holdClassThisContext._lineChartWidget.updateDataRequest();
+            //holdClassThisContext._lineChartWidget.updateDataRequest();
         });
         
         this.polygonTemplate.events.on("over", function (ev) {
