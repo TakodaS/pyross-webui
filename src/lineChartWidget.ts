@@ -110,15 +110,12 @@ class lineChartWidget {
 		yAxis.title.text = "% of population"
 		var seriesList = [];
 		let classes = this.dclass.classes;
-		console.log(classes.length);
 		for (let i = 0; i < classes.length; i++) {
-			console.log(i, " being pushed");
 			var series = this._lineChart.series.push(new am4charts.LineSeries());
 			seriesList.push(series);
 			seriesList[i].dataFields.valueX = "t";
 			seriesList[i].dataFields.valueY = classes[i];
 			seriesList[i].name = classes[i];
-			console.log(seriesList);
 		}
 	
 
