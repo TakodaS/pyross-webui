@@ -31119,9 +31119,9 @@ function make_xlsx_lib(XLSX) {
   /* 18.14 Supplementary Workbook Data */
 
 
-  function parse_xlink_xml() {//var opts = _opts || {};
-    //if(opts.WTF) throw "XLSX External Link";
-  }
+  function parse_xlink_xml() {} //var opts = _opts || {};
+  //if(opts.WTF) throw "XLSX External Link";
+
   /* [MS-XLSB] 2.1.7.25 External Link */
 
 
@@ -51371,7 +51371,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37381" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "32771" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

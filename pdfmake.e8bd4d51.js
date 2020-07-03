@@ -2162,7 +2162,7 @@ var define;
 var Buffer = require("buffer").Buffer;
 var global = arguments[3];
 var process = require("process");
-var __dirname = "/home/ab/azure-covid-sim/cpPyrossUI/node_modules/pdfmake/build";
+var __dirname = "/home/ab/azure-covid-sim/pyross-webui/node_modules/pdfmake/build";
 /*! pdfmake v0.1.65, @license MIT, @link http://pdfmake.org */
 (function webpackUniversalModuleDefinition(root, factory) {
   if (typeof exports === 'object' && typeof module === 'object') module.exports = factory();else if (typeof define === 'function' && define.amd) define([], factory);else {
@@ -75160,7 +75160,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "37381" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "32771" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
