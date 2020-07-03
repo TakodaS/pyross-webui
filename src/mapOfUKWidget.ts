@@ -86,6 +86,7 @@ class mapOfUKWidget {
         this._mapChart.scale = 1.15;
         this._mapChart.x = am4core.percent(-20);
         this._mapChart.y = am4core.percent(-15);
+        //this._mapChart.fontSize = 10;
 
         // Create map polygon series  (UK minus Ireland)
         this.polygonSeries = this._mapChart.series.push(new am4maps.MapPolygonSeries());

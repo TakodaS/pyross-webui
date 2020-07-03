@@ -19,7 +19,7 @@ class pieChartWidget {
     private totalLabel: am4core.Label = new am4core.Label();
     private total: number = 0;
     private highlightStrokeColor: any = am4core.color("red");
-    private defaultColor: any = am4core.color("green"); 
+    private defaultColor: any = am4core.color("green");
     private activeColor: any = am4core.color("red");
 
 
@@ -75,6 +75,19 @@ class pieChartWidget {
         this._pieChart.innerRadius = am4core.percent(0);
         //this._pieChart.x = am4core.percent(-5);
 
+        // var miniPie = am4core.create("minipie", am4charts.PieChart);
+        // miniPie.data = [{
+        //     "value": "minime",
+        //     "color": am4core.color("green")
+        // }]
+        // miniPie.radius = am4core.percent(10);
+        // var miniseries = this._pieChart.series.push(new am4charts.PieSeries());
+        // miniseries.labels.template.disabled = true;
+        // miniseries.ticks.template.disabled = true;
+        // miniPie.x = am4core.percent(80);
+        // //miniseries.dataFields.value = "value";
+
+
         // Add and configure Series
         this.series = this._pieChart.series.push(new am4charts.PieSeries());
         this.series.dataFields.value = "value";
@@ -91,7 +104,7 @@ class pieChartWidget {
         this.series.slices.template.cornerRadius = 6;
         this.series.slices.template.fillOpacity = 0.7;
         this.series.slices.template.fill = this.defaultColor;
-        
+
         this.series.slices.template.strokeWidth = 1;
         this.series.slices.template.stroke = am4core.color("white");
         //this.series.slices.template.tooltipText = "{ageRange}:{value}";
@@ -124,7 +137,7 @@ class pieChartWidget {
         //omg3.properties.shiftRadius = 0;
         omg3.properties.shiftRadius = 0.1;
         omg3.properties.scale = 1.05;
-        omg3.properties.fillOpacity = 0.3;
+        omg3.properties.fillOpacity = 0.6;
         //omg3.properties.fill = this.defaultColor;
         omg.properties.stroke = this.highlightStrokeColor;
         omg.properties.strokeWidth = 3;
@@ -211,13 +224,13 @@ class pieChartWidget {
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
             if (!slice.isActive) {
-                holdClassThisContext.total = holdClassThisContext.total - hitValue - 100000000;
-                holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
+                holdClassThisContext.total = holdClassThisContext.total - hitValue;
+                holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
                 slice.setState("default");
                 label.setState("aliasDefault")
             } else {
-                holdClassThisContext.total = holdClassThisContext.total + hitValue + 100000000;
-                holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
+                holdClassThisContext.total = holdClassThisContext.total + hitValue;
+                holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
                 slice.setState("active");
                 label.setState("aliasActive")
             }
