@@ -19,6 +19,8 @@ class pieChartWidget {
     private totalLabel: am4core.Label = new am4core.Label();
     private total: number = 0;
     private highlightStrokeColor: any = am4core.color("red");
+    private defaultColor: any = am4core.color("green"); 
+    private activeColor: any = am4core.color("red");
 
 
     constructor(name: string, pieChartData: any, selectedAges: Set<string>) {
@@ -88,7 +90,10 @@ class pieChartWidget {
 
         this.series.slices.template.cornerRadius = 6;
         this.series.slices.template.fillOpacity = 0.7;
-        this.series.slices.template.strokeWidth = 0;
+        this.series.slices.template.fill = this.defaultColor;
+        
+        this.series.slices.template.strokeWidth = 1;
+        this.series.slices.template.stroke = am4core.color("white");
         //this.series.slices.template.tooltipText = "{ageRange}:{value}";
         this.series.slices.template.tooltipText = "";
 
@@ -110,17 +115,27 @@ class pieChartWidget {
         let omg = this.series.slices.template.states.create("hover");
         omg.properties.shiftRadius = 0;
         omg.properties.scale = 1.05;
-        omg.properties.fillOpacity = 0.5;
+        omg.properties.fillOpacity = 0.3;
+        //omg.properties.fill = this.highlightStrokeColor;
         omg.properties.stroke = this.highlightStrokeColor;
-        omg.properties.strokeWidth = 1;
+        omg.properties.strokeWidth = 3;
+
+        let omg3 = this.series.slices.template.states.create("hoverActive");
+        //omg3.properties.shiftRadius = 0;
+        omg3.properties.shiftRadius = 0.1;
+        omg3.properties.scale = 1.05;
+        omg3.properties.fillOpacity = 0.3;
+        //omg3.properties.fill = this.defaultColor;
+        omg.properties.stroke = this.highlightStrokeColor;
+        omg.properties.strokeWidth = 3;
 
         let omg2 = this.series.slices.template.states.create("default");
-        omg2.properties.fillOpacity = 0.5;
+        //omg2.properties.fillOpacity = 0.5;
         //omg2.properties.stroke = am4core.color("white");
-        omg2.properties.strokeWidth = 0;
+        //omg2.properties.strokeWidth = 0;
 
         let as = this.series.slices.template.states.create("active");
-        as.properties.fill = am4core.color("red");
+        as.properties.fill = this.activeColor;
         as.properties.fillOpacity = 1;
         // as.properties.stroke = am4core.color("red");
         // as.properties.strokeWidth = 4;
@@ -196,12 +211,12 @@ class pieChartWidget {
             let data = slice.dataItem.dataContext;
             let hitValue = data.value;
             if (!slice.isActive) {
-                holdClassThisContext.total = holdClassThisContext.total - hitValue;
+                holdClassThisContext.total = holdClassThisContext.total - hitValue - 100000000;
                 holdClassThisContext.selectedAges.add(ev.target.dataItem.dataContext["ageRange"]);
                 slice.setState("default");
                 label.setState("aliasDefault")
             } else {
-                holdClassThisContext.total = holdClassThisContext.total + hitValue;
+                holdClassThisContext.total = holdClassThisContext.total + hitValue + 100000000;
                 holdClassThisContext.selectedAges.delete(ev.target.dataItem.dataContext["ageRange"]);
                 slice.setState("active");
                 label.setState("aliasActive")

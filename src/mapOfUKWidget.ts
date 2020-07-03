@@ -228,6 +228,7 @@ class mapOfUKWidget {
         // Set active status (and therefore color) of the BIG MAP to be the same as smallMap.  Toggle smallMap color.
         this._mapChart.smallMap.events.on("hit", function (ev) {
             holdClassThisContext.mapChart.goHome(); //Big map does not move when smallMap is clicked on
+            console.log(holdClassThisContext._mapChart.smallMap);
             if (holdClassThisContext.getSmallMapColor() == holdClassThisContext.activeColor) {
                 //make all counties active
                 holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
