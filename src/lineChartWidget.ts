@@ -93,23 +93,36 @@ class lineChartWidget {
 		// title.marginBottom = 15;
 		//Put title directly on chart to save space /////////////////////////////
 		let lclabel = this._lineChart.createChild(am4core.Label);
-		lclabel.text = "FAKE COVID CASES";
+		lclabel.text = "Pyross Inference";
 		lclabel.fontSize = 20;
-		lclabel.align = "center";
+		lclabel.align = "above";
 		lclabel.isMeasured = false;
 		lclabel.x = am4core.percent(50);
 		lclabel.horizontalCenter = "middle";
-		lclabel.y = 20;
+		lclabel.y = 0;
 
 		let xAxis = this._lineChart.xAxes.push(new am4charts.ValueAxis());
 		xAxis.renderer.minGridDistance = 40;
+		xAxis.title.text = "time/Days"
 
 		// Create value axis
 		let yAxis = this._lineChart.yAxes.push(new am4charts.ValueAxis());
-		var series1 = this._lineChart.series.push(new am4charts.LineSeries());
-		series1.dataFields.valueX = "t";
-		series1.dataFields.valueY = "S";
+		yAxis.title.text = "% of population"
+		var seriesList = [];
+		let classes = this.dclass.classes;
+		console.log(classes.length);
+		for (let i = 0; i < classes.length; i++) {
+			console.log(i, " being pushed");
+			var series = this._lineChart.series.push(new am4charts.LineSeries());
+			seriesList.push(series);
+			seriesList[i].dataFields.valueX = "t";
+			seriesList[i].dataFields.valueY = classes[i];
+			seriesList[i].name = classes[i];
+			console.log(seriesList);
+		}
+	
 
+this._lineChart.legend = new am4charts.Legend();
 
 
 	}// end initLineChart

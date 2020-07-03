@@ -71,7 +71,7 @@ class NowcastPage  {
             { ageRange: "Adults", value: 549963 },       ]
 	fakeData = this.dclass.agesForPiechart;
         //let pieChartData = dm.getAgeData(jsdata, 100);
-        let pieChartData = fakeData;
+        let pieChartData = this.dclass.agesForPiechart;
         let selectedAges: Set<string> = new Set();
         let selectedCounties: Set<string> = new Set();
 
