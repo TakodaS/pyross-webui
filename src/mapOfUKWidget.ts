@@ -22,9 +22,9 @@ class mapOfUKWidget {
     private smallTemplate: any;
     private _hitFlag: boolean = false;
     private _lineChartWidget: lineChartWidget;
-    
 
-    
+
+
     constructor() {
         this._selectedCounties = new Set();
         this.getThisContext();
@@ -68,30 +68,33 @@ class mapOfUKWidget {
     ///////////////////// Private Interface...not to be used by consumer
     private getThisContext(): void { holdClassThisContext = this };
 
+    
+
     private initLargeMap(): void {
         this._mapChart = am4core.create("mapchart", am4maps.MapChart);
         //this.mapChart.width = am4core.percent(50);
         //this.mapChart.height = am4core.percent(100);
         this._mapChart.seriesContainer.draggable = false;
-        //this._mapChart.seriesContainer.resizable = false;
-        //this._mapChart.zoomLevel = 1;
-        //this._mapChart.maxZoomLevel = 1;
+        this._mapChart.seriesContainer.resizable = false;
+        this._mapChart.zoomLevel = 1;
+        this._mapChart.maxZoomLevel = 1;
 
         // Set map definition
         this._mapChart.geodata = am4geodata_ukCountiesHigh;
+        //this._mapChart.geodataSource.url = "./ukCountiesHighMod.json";
+        console.log("mapchart", this._mapChart);
         // Set projection
         this._mapChart.projection = new am4maps.projections.Miller();
 
         //Make more space for scaling
-        this._mapChart.scale = 1.15;
+        this._mapChart.scale = 1.13;
         this._mapChart.x = am4core.percent(-20);
         this._mapChart.y = am4core.percent(-15);
-        //this._mapChart.fontSize = 10;
 
         // Create map polygon series  (UK minus Ireland)
         this.polygonSeries = this._mapChart.series.push(new am4maps.MapPolygonSeries());
         // Exclude Ireland
-        this.polygonSeries.exclude = ["IE"];
+        this.polygonSeries.exclude = ["IE", "GB-NIR"];
         // Make map load polygon (like country names) data from GeoJSON
         this.polygonSeries.useGeodata = true;
         //polygonSeries.zoom = 0.4;
@@ -130,13 +133,13 @@ class mapOfUKWidget {
         aliasActiveState.properties.fillOpacity = 1;
         aliasActiveState.properties.stroke = am4core.color("white");
         aliasActiveState.properties.strokeWidth = 1;
-        
+
         let aliasInactiveState = this.polygonTemplate.states.create("aliasInactive");
         aliasInactiveState.properties.fill = this.inactiveColor;
         aliasInactiveState.properties.fillOpacity = 1;
         aliasInactiveState.properties.stroke = am4core.color("white");
         aliasInactiveState.properties.strokeWidth = 1;
-            
+
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         // Create map polygon series  (Ireland only)
@@ -164,10 +167,14 @@ class mapOfUKWidget {
         //this._mapChart.smallMap.zIndex = 1000;
         this._mapChart.smallMap.rectangle.strokeWidth = 0;
         this._mapChart.smallMap.scale = 1;
+
+
         this._mapChart.smallMap.isMeasured = false;
-        this._mapChart.smallMap.x = am4core.percent(78);
+        this._mapChart.smallMap.x = am4core.percent(75);
         //this._mapChart.smallMap.horizontalCenter = "middle";
         this._mapChart.smallMap.y = am4core.percent(50);
+        //this._mapChart.smallMap.moveHtmlContainer("smallukmap");
+
         //this._mapChart.smallMap.zIndex = -1000;
         //this._mapChart.smallMap.rectangle.fill = am4core.color("#f00", 0);
         //this._mapChart.smallMap.rectangle.fillOpacity = 0;
@@ -177,9 +184,6 @@ class mapOfUKWidget {
         //this._mapChart.smallMap.background.hoverable = false;
         //this._mapChart.smallMap.rectangle.hoverable = false;
 
-        
-        
-
         let smallSeries = this._mapChart.smallMap.series.getIndex(0);
         this.smallTemplate = smallSeries.mapPolygons.template;
         //smallTemplate.stroke = smallSeries.mapPolygons.template.fill;
@@ -187,7 +191,7 @@ class mapOfUKWidget {
         this.smallTemplate.fill = this.activeColor;
     } //end initSmallMap
 
-    
+
     //////////////////////////////////////////////////
     //Events
     ////////////////////////////////////////////////////
@@ -211,11 +215,11 @@ class mapOfUKWidget {
             holdClassThisContext.checkIfAllCountiesAreSame();
             //holdClassThisContext._lineChartWidget.updateDataRequest();
         });
-        
+
         this.polygonTemplate.events.on("over", function (ev) {
             let mappoly = ev.target;
             mappoly.setState("highlight");
-            });
+        });
 
         this.polygonTemplate.events.on("out", function (ev) {
             let mappoly = ev.target;
@@ -225,7 +229,9 @@ class mapOfUKWidget {
                 mappoly.setState("aliasInactive");
             }
         };
-    
+
+        /////////////////////SMALL MAP EVENTS////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
         // Set active status (and therefore color) of the BIG MAP to be the same as smallMap.  Toggle smallMap color.
         this._mapChart.smallMap.events.on("hit", function (ev) {
             holdClassThisContext.mapChart.goHome(); //Big map does not move when smallMap is clicked on
@@ -241,7 +247,7 @@ class mapOfUKWidget {
                 //make all counties inative
                 holdClassThisContext.polygonSeries.mapPolygons.each(function (mapPolygon) {
                     if (mapPolygon.isActive) {
-                    mapPolygon.dispatchImmediately("hit");
+                        mapPolygon.dispatchImmediately("hit");
                     }
                 })
             }
@@ -272,6 +278,10 @@ class mapOfUKWidget {
                     console.log("WRONG COLOR");
                 }
             })
+        });
+
+        this._mapChart.smallMap.events.onAll(function (event) {
+            console.log("Small map event", event);
         });
 
     }; //end setEvents
@@ -307,23 +317,23 @@ class mapOfUKWidget {
         }
     }
 
-    private getSmallMapColor():am4core.Color {
+    private getSmallMapColor(): am4core.Color {
         if (holdClassThisContext.smallTemplate.polygon.fill == holdClassThisContext.inactiveColor) {
             return holdClassThisContext.inactiveColor;
         } else {
             return holdClassThisContext.activeColor;
         }
     }
-        
-    private smallMapColorToggle():void {
-        if (holdClassThisContext.getSmallMapColor() == holdClassThisContext.inactiveColor) {
-            holdClassThisContext.setSmallMapColor(holdClassThisContext.activeColor);
-        } else  {
-            holdClassThisContext.setSmallMapColor(holdClassThisContext.inactiveColor);
-        }
-    }
-        
-    
+
+    // private smallMapColorToggle():void {
+    //     if (holdClassThisContext.getSmallMapColor() == holdClassThisContext.inactiveColor) {
+    //         holdClassThisContext.setSmallMapColor(holdClassThisContext.activeColor);
+    //     } else  {
+    //         holdClassThisContext.setSmallMapColor(holdClassThisContext.inactiveColor);
+    //     }
+    // }
+
+
     // addControlButtons() {
     //     // Add zoom control
     //     this._mapChart.zoomControl = new am4maps.ZoomControl();
@@ -337,12 +347,12 @@ class mapOfUKWidget {
     //     button.icon = new am4core.Sprite();
     //     button.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
     // }
-        
+
     // button.events.on("hit", function() {
     //     holdClassThisContext._mapChart.goHome();
     // });
 
-    
+
 
 } //end class mapOfUKWidget
 
