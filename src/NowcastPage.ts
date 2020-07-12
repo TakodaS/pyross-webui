@@ -11,7 +11,7 @@ am4core.useTheme(am4themes_material)
 // Local imports
 import { mapOfUKWidget } from "./mapOfUKWidget"
 import { pieChartWidget } from "./pieChartWidget"
-import { miniPieChart2 } from "./miniPieChart2"
+import { miniPieChart } from "./miniPieChart"
 //import { miniPieChart2 } from "./miniPieChart2"
 
 import { lineChartWidget } from "./lineChartWidget"
@@ -23,77 +23,70 @@ import { jsdata } from "./index"
 var holdClassThisContext: any
 
 class NowcastPage {
-  private mchart: any
-  private pchart: any
-  private lchart: any
-  private miniPieChart: any
-  private dclass: any
+	private mchart: any
+	private pchart: any
+	private lchart: any
+	private miniPieChart: any
+	private dclass: any
 
-  constructor() {
-    holdClassThisContext = this
-    this.initPage()
-  }
+	constructor() {
+		holdClassThisContext = this
+		this.initPage()
+	}
 
-  //////////////////////////////Public Interface////////////////////////////////////////
-  //
-  //
+	//////////////////////////////Public Interface////////////////////////////////////////
+	//
+	//
 
-  //
-  //
-  //////////////////////////////////////////////////////////////////////////////////////
+	//
+	//
+	//////////////////////////////////////////////////////////////////////////////////////
 
-  ///////////////////// Private Interface...not to be used by consumer
-  initPage(): void {
-    // Themes begin
-    am4core.useTheme(am4themes_animated)
-    // Themes end
+	///////////////////// Private Interface...not to be used by consumer
+	initPage(): void {
+		// Themes begin
+		am4core.useTheme(am4themes_animated)
+		// Themes end
 
-    //////////////////////////////////////////////////////////////
-    // Create containers
-    //////////////////////////////////////////////////////////////
-    // let container = am4core.create(label, am4core.Container)
-    // container.width = am4core.percent(100);
-    // container.height = am4core.percent(100);
-    // container.layout = "horizontal";
-    // let UIcontainer = container.createChild(am4core.Container);
-    // let UIwidth = 50;
-    // UIcontainer.width = am4core.percent(UIwidth);
-    // UIcontainer.height = am4core.percent(100);
-    // let outputContainer = container.createChild(am4core.Container);
-    // outputContainer.width = am4core.percent(100-UIwidth);
-    // outputContainer.height = am4core.percent(100);
+		//////////////////////////////////////////////////////////////
+		// Create containers
+		//////////////////////////////////////////////////////////////
+		// let container = am4core.create(label, am4core.Container)
+		// container.width = am4core.percent(100);
+		// container.height = am4core.percent(100);
+		// container.layout = "horizontal";
+		// let UIcontainer = container.createChild(am4core.Container);
+		// let UIwidth = 50;
+		// UIcontainer.width = am4core.percent(UIwidth);
+		// UIcontainer.height = am4core.percent(100);
+		// let outputContainer = container.createChild(am4core.Container);
+		// outputContainer.width = am4core.percent(100-UIwidth);
+		// outputContainer.height = am4core.percent(100);
 
-    //Create Nowcast (NC) Widgets
-    this.mchart = new mapOfUKWidget()
-    this.dclass = new DataClass(jsdata)
+		//Create Nowcast (NC) Widgets
+		this.mchart = new mapOfUKWidget()
+		this.dclass = new DataClass(jsdata)
 
-    //Fake pie slice data for testing piechart and linechart
-    let fakeData = [
-      { ageRange: "children", value: 98681 },
-      { ageRange: "millennials", value: 200000 },
-      { ageRange: "Gen Z", value: 309963 },
-      { ageRange: "Baby Boomer", value: 400000 },
-      { ageRange: "Adults", value: 549963 },
-    ]
-    fakeData = this.dclass.agesForPiechart
-    //let pieChartData = dm.getAgeData(jsdata, 100);
-    let pieChartData = fakeData
-    let selectedAges: Set<string> = new Set()
-    let selectedCounties: Set<string> = new Set()
+		//Fake pie slice data for testing piechart and linechart
+		let fakeData = this.dclass.agesForPiechart
+		//let pieChartData = dm.getAgeData(jsdata, 100);
+		let pieChartData = fakeData
+		let selectedAges: Set<string> = new Set()
+		let selectedCounties: Set<string> = new Set()
 
-    this.pchart = new pieChartWidget("piechart", pieChartData, selectedAges)
-    this.lchart = new lineChartWidget(
-      "linechart",
-      this.mchart,
-      this.pchart,
-      this.dclass
-    )
-    this.miniPieChart = new miniPieChart2("minipiechart", this.pchart)
+		this.pchart = new pieChartWidget("piechart", pieChartData, selectedAges)
+		this.lchart = new lineChartWidget(
+			"linechart",
+			this.mchart,
+			this.pchart,
+			this.dclass
+		)
+		this.miniPieChart = new miniPieChart("minipiechart", this.pchart)
 
-    //linechart used by both the UK map chart AND BIG pie chart
-    this.mchart.lineChartWidget = this.lchart
-    this.pchart.lineChartWidget = this.lchart
-  } // end initPage
+		//linechart used by both the UK map chart AND BIG pie chart
+		this.mchart.lineChartWidget = this.lchart
+		this.pchart.lineChartWidget = this.lchart
+	} // end initPage
 } // end class NowcastPage
 
 // Export

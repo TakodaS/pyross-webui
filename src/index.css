@@ -21,7 +21,7 @@ body {
 
 .item {
   border: 0px solid #87b5ff;
-  /*border: 1px solid #87b5ff; */
+  //border: 1px solid #87b5ff;
   border-radius: 30px;
   font-size: 1.5em;
   font-family: sans-serif;

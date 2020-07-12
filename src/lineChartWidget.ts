@@ -87,6 +87,7 @@ class lineChartWidget {
 		this._lineChart.zoomOutButton.disabled = true;
 		this._lineChart.paddingBottom = 0;
 		this._lineChart.paddingTop = 10;
+		this._lineChart.logo.dom.outerHTML = ""
 
 		// let title = this._lineChart.titles.push(new am4core.Label());
 		// title.text = "Fake COVID-19 cases";
