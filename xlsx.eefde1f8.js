@@ -117,9 +117,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"../node_modules/parcel-bundler/src/builtins/_empty.js":[function(require,module,exports) {
-
-},{}],"../node_modules/xlsx/dist/cpexcel.js":[function(require,module,exports) {
+})({"../node_modules/xlsx/dist/cpexcel.js":[function(require,module,exports) {
 var Buffer = require("buffer").Buffer;
 /* cpexcel.js (C) 2013-present SheetJS -- http://sheetjs.com */
 
@@ -4752,7 +4750,7 @@ Note: since JSZip 3 removed critical functionality, this version assigns to the
     define([], e);
   } else {
     var f;
-    "undefined" != typeof window ? f = window : "undefined" != typeof global ? f = global : "undefined" != typeof $ && $.global ? f = $.global : "undefined" != typeof self && (f = self), f.JSZipSync = e();
+    "undefined" != typeof globalThis ? f = globalThis : "undefined" != typeof window ? f = window : "undefined" != typeof global ? f = global : "undefined" != typeof $ && $.global ? f = $.global : "undefined" != typeof self && (f = self), f.JSZipSync = e();
   }
 })(function () {
   var define, module, exports;
@@ -15353,7 +15351,7 @@ var define;
 var XLSX = {};
 
 function make_xlsx_lib(XLSX) {
-  XLSX.version = '0.15.6';
+  XLSX.version = '0.16.5';
   var current_codepage = 1200,
       current_ansi = 1252;
   /*global cptable:true, window */
@@ -15681,7 +15679,7 @@ function make_xlsx_lib(XLSX) {
   var SSF = {};
 
   var make_ssf = function make_ssf(SSF) {
-    SSF.version = '0.10.3';
+    SSF.version = '0.11.2';
 
     function _strrev(x) {
       var o = "",
@@ -15771,11 +15769,66 @@ function make_xlsx_lib(XLSX) {
       t[48] = '##0.0E+0';
       t[49] = '@';
       t[56] = '"上午/下午 "hh"時"mm"分"ss"秒 "';
-      t[65535] = 'General';
     }
 
     var table_fmt = {};
     init_table(table_fmt);
+    /* Defaults determined by systematically testing in Excel 2019 */
+
+    /* These formats appear to default to other formats in the table */
+
+    var default_map = [];
+    var defi = 0; //  5 -> 37 ...  8 -> 40
+
+    for (defi = 5; defi <= 8; ++defi) default_map[defi] = 32 + defi; // 23 ->  0 ... 26 ->  0
+
+
+    for (defi = 23; defi <= 26; ++defi) default_map[defi] = 0; // 27 -> 14 ... 31 -> 14
+
+
+    for (defi = 27; defi <= 31; ++defi) default_map[defi] = 14; // 50 -> 14 ... 58 -> 14
+
+
+    for (defi = 50; defi <= 58; ++defi) default_map[defi] = 14; // 59 ->  1 ... 62 ->  4
+
+
+    for (defi = 59; defi <= 62; ++defi) default_map[defi] = defi - 58; // 67 ->  9 ... 68 -> 10
+
+
+    for (defi = 67; defi <= 68; ++defi) default_map[defi] = defi - 58; // 72 -> 14 ... 75 -> 17
+
+
+    for (defi = 72; defi <= 75; ++defi) default_map[defi] = defi - 58; // 69 -> 12 ... 71 -> 14
+
+
+    for (defi = 67; defi <= 68; ++defi) default_map[defi] = defi - 57; // 76 -> 20 ... 78 -> 22
+
+
+    for (defi = 76; defi <= 78; ++defi) default_map[defi] = defi - 56; // 79 -> 45 ... 81 -> 47
+
+
+    for (defi = 79; defi <= 81; ++defi) default_map[defi] = defi - 34; // 82 ->  0 ... 65536 -> 0 (omitted)
+
+    /* These formats technically refer to Accounting formats with no equivalent */
+
+
+    var default_str = []; //  5 -- Currency,   0 decimal, black negative
+
+    default_str[5] = default_str[63] = '"$"#,##0_);\\("$"#,##0\\)'; //  6 -- Currency,   0 decimal, red   negative
+
+    default_str[6] = default_str[64] = '"$"#,##0_);[Red]\\("$"#,##0\\)'; //  7 -- Currency,   2 decimal, black negative
+
+    default_str[7] = default_str[65] = '"$"#,##0.00_);\\("$"#,##0.00\\)'; //  8 -- Currency,   2 decimal, red   negative
+
+    default_str[8] = default_str[66] = '"$"#,##0.00_);[Red]\\("$"#,##0.00\\)'; // 41 -- Accounting, 0 decimal, No Symbol
+
+    default_str[41] = '_(* #,##0_);_(* \\(#,##0\\);_(* "-"_);_(@_)'; // 42 -- Accounting, 0 decimal, $  Symbol
+
+    default_str[42] = '_("$"* #,##0_);_("$"* \\(#,##0\\);_("$"* "-"_);_(@_)'; // 43 -- Accounting, 2 decimal, No Symbol
+
+    default_str[43] = '_(* #,##0.00_);_(* \\(#,##0.00\\);_(* "-"??_);_(@_)'; // 44 -- Accounting, 2 decimal, $  Symbol
+
+    default_str[44] = '_("$"* #,##0.00_);_("$"* \\(#,##0.00\\);_("$"* "-"??_);_(@_)';
 
     function frac(x, D, mixed) {
       var sgn = x < 0 ? -1 : 1;
@@ -15886,54 +15939,73 @@ function make_xlsx_lib(XLSX) {
       if (date1904) epoch -= 1461 * 24 * 60 * 60 * 1000;else if (v >= base1904) epoch += 24 * 60 * 60 * 1000;
       return (epoch - (dnthresh + (v.getTimezoneOffset() - basedate.getTimezoneOffset()) * 60000)) / (24 * 60 * 60 * 1000);
     }
+    /* The longest 32-bit integer text is "-4294967296", exactly 11 chars */
+
 
     function general_fmt_int(v) {
       return v.toString(10);
     }
 
     SSF._general_int = general_fmt_int;
+    /* ECMA-376 18.8.30 numFmt*/
+
+    /* Note: `toPrecision` uses standard form when prec > E and E >= -6 */
 
     var general_fmt_num = function make_general_fmt_num() {
-      var gnr1 = /\.(\d*[1-9])0+$/,
-          gnr2 = /\.0*$/,
-          gnr4 = /\.(\d*[1-9])0+/,
-          gnr5 = /\.0*[Ee]/,
-          gnr6 = /(E[+-])(\d)$/;
+      var trailing_zeroes_and_decimal = /(?:\.0*|(\.\d*[1-9])0+)$/;
 
-      function gfn2(v) {
+      function strip_decimal(o) {
+        return o.indexOf(".") == -1 ? o : o.replace(trailing_zeroes_and_decimal, "$1");
+      }
+      /* General Exponential always shows 2 digits exp and trims the mantissa */
+
+
+      var mantissa_zeroes_and_decimal = /(?:\.0*|(\.\d*[1-9])0+)[Ee]/;
+      var exp_with_single_digit = /(E[+-])(\d)$/;
+
+      function normalize_exp(o) {
+        if (o.indexOf("E") == -1) return o;
+        return o.replace(mantissa_zeroes_and_decimal, "$1E").replace(exp_with_single_digit, "$10$2");
+      }
+      /* exponent >= -9 and <= 9 */
+
+
+      function small_exp(v) {
         var w = v < 0 ? 12 : 11;
-        var o = gfn5(v.toFixed(12));
+        var o = strip_decimal(v.toFixed(12));
         if (o.length <= w) return o;
         o = v.toPrecision(10);
         if (o.length <= w) return o;
         return v.toExponential(5);
       }
+      /* exponent >= 11 or <= -10 likely exponential */
 
-      function gfn3(v) {
-        var o = v.toFixed(11).replace(gnr1, ".$1");
-        if (o.length > (v < 0 ? 12 : 11)) o = v.toPrecision(6);
-        return o;
+
+      function large_exp(v) {
+        var o = strip_decimal(v.toFixed(11));
+        return o.length > (v < 0 ? 12 : 11) || o === "0" || o === "-0" ? v.toPrecision(6) : o;
       }
 
-      function gfn4(o) {
-        for (var i = 0; i != o.length; ++i) if ((o.charCodeAt(i) | 0x20) === 101) return o.replace(gnr4, ".$1").replace(gnr5, "E").replace("e", "E").replace(gnr6, "$10$2");
-
-        return o;
-      }
-
-      function gfn5(o) {
-        return o.indexOf(".") > -1 ? o.replace(gnr2, "").replace(gnr1, ".$1") : o;
-      }
-
-      return function general_fmt_num(v) {
+      function general_fmt_num_base(v) {
         var V = Math.floor(Math.log(Math.abs(v)) * Math.LOG10E),
             o;
-        if (V >= -4 && V <= -1) o = v.toPrecision(10 + V);else if (Math.abs(V) <= 9) o = gfn2(v);else if (V === 10) o = v.toFixed(10).substr(0, 12);else o = gfn3(v);
-        return gfn5(gfn4(o));
-      };
+        if (V >= -4 && V <= -1) o = v.toPrecision(10 + V);else if (Math.abs(V) <= 9) o = small_exp(v);else if (V === 10) o = v.toFixed(10).substr(0, 12);else o = large_exp(v);
+        return strip_decimal(normalize_exp(o.toUpperCase()));
+      }
+
+      return general_fmt_num_base;
     }();
 
     SSF._general_num = general_fmt_num;
+    /*
+    	"General" rules:
+    	- text is passed through ("@")
+    	- booleans are rendered as TRUE/FALSE
+    	- "up to 11 characters" displayed for numbers
+    	- Default date format (code 14) used for Dates
+    
+    	TODO: technically the display depends on the width of the cell
+    */
 
     function general_fmt(v, opts) {
       switch (typeof v) {
@@ -15959,9 +16031,14 @@ function make_xlsx_lib(XLSX) {
 
     SSF._general = general_fmt;
 
-    function fix_hijri() {
-      return 0;
-    }
+    function fix_hijri(date, o) {
+      /* TODO: properly adjust y/m/d and  */
+      o[0] -= 581;
+      var dow = date.getDay();
+      if (date < 60) dow = (dow + 6) % 7;
+      return dow;
+    } //var THAI_DIGITS = "\u0E50\u0E51\u0E52\u0E53\u0E54\u0E55\u0E56\u0E57\u0E58\u0E59".split("");
+
     /*jshint -W086 */
 
 
@@ -16122,9 +16199,11 @@ function make_xlsx_lib(XLSX) {
           /* 'e' era */
           out = y;
           outl = 1;
+          break;
       }
 
-      if (outl > 0) return pad0(out, outl);else return "";
+      var outstr = outl > 0 ? pad0(out, outl) : "";
+      return outstr;
     }
     /*jshint +W086 */
 
@@ -16239,11 +16318,11 @@ function make_xlsx_lib(XLSX) {
       }
 
       function dec(val, d) {
-        if (d < ('' + Math.round((val - Math.floor(val)) * Math.pow(10, d))).length) {
-          return 0;
-        }
+        var _frac = val - Math.floor(val),
+            dd = Math.pow(10, d);
 
-        return Math.round((val - Math.floor(val)) * Math.pow(10, d));
+        if (d < ('' + Math.round(_frac * dd)).length) return 0;
+        return Math.round(_frac * dd);
       }
 
       function carry(val, d) {
@@ -16583,7 +16662,7 @@ function make_xlsx_lib(XLSX) {
     }
 
     SSF._split = split_fmt;
-    var abstime = /\[[HhMmSs]*\]/;
+    var abstime = /\[[HhMmSs\u0E0A\u0E19\u0E17]*\]/;
 
     function fmt_is_date(fmt) {
       var i = 0,
@@ -16646,8 +16725,10 @@ function make_xlsx_lib(XLSX) {
 
           case 'A':
           case 'a':
+          case '上':
             if (fmt.substr(i, 3).toUpperCase() === "A/P") return true;
             if (fmt.substr(i, 5).toUpperCase() === "AM/PM") return true;
+            if (fmt.substr(i, 5).toUpperCase() === "上午/下午") return true;
             ++i;
             break;
 
@@ -16837,6 +16918,7 @@ function make_xlsx_lib(XLSX) {
 
           case 'A':
           case 'a':
+          case '上':
             var q = {
               t: c,
               v: c
@@ -16850,6 +16932,11 @@ function make_xlsx_lib(XLSX) {
               i += 3;
             } else if (fmt.substr(i, 5).toUpperCase() === "AM/PM") {
               if (dt != null) q.v = dt.H >= 12 ? "PM" : "AM";
+              q.t = 'T';
+              i += 5;
+              hr = 'h';
+            } else if (fmt.substr(i, 5).toUpperCase() === "上午/下午") {
+              if (dt != null) q.v = dt.H >= 12 ? "下午" : "上午";
               q.t = 'T';
               i += 5;
               hr = 'h';
@@ -16912,7 +16999,7 @@ function make_xlsx_lib(XLSX) {
           case '#':
             o = c;
 
-            while (++i < fmt.length && "0#?.,E+-%".indexOf(c = fmt.charAt(i)) > -1 || c == '\\' && fmt.charAt(i + 1) == "-" && i < fmt.length - 2 && "0#".indexOf(fmt.charAt(i + 2)) > -1) o += c;
+            while (++i < fmt.length && "0#?.,E+-%".indexOf(c = fmt.charAt(i)) > -1) o += c;
 
             out[out.length] = {
               t: 'n',
@@ -16974,7 +17061,7 @@ function make_xlsx_lib(XLSX) {
             ++i;
             break;
 
-          case "$":
+          case '$':
             out[out.length] = {
               t: 't',
               v: '$'
@@ -16992,6 +17079,8 @@ function make_xlsx_lib(XLSX) {
             break;
         }
       }
+      /* Scan for date/time parts */
+
 
       var bt = 0,
           ss0 = 0,
@@ -17037,6 +17126,8 @@ function make_xlsx_lib(XLSX) {
             if (bt < 3 && out[i].v.match(/[Ss]/)) bt = 3;
         }
       }
+      /* time rounding depends on presence of minute / second / usec fields */
+
 
       switch (bt) {
         case 0:
@@ -17107,7 +17198,6 @@ function make_xlsx_lib(XLSX) {
             break;
 
           case 'n':
-          case '(':
           case '?':
             jj = i + 1;
 
@@ -17140,7 +17230,7 @@ function make_xlsx_lib(XLSX) {
           /* '(' */
           {
             myv = v < 0 && nstr.charCodeAt(0) === 45 ? -v : v;
-            ostr = write_num('(', nstr, myv);
+            ostr = write_num('n', nstr, myv);
           } else {
           myv = v < 0 && flen > 1 ? -v : v;
           ostr = write_num('n', nstr, myv);
@@ -17163,7 +17253,7 @@ function make_xlsx_lib(XLSX) {
 
         if (decpt === out.length && ostr.indexOf("E") === -1) {
           for (i = out.length - 1; i >= 0; --i) {
-            if (out[i] == null || 'n?('.indexOf(out[i].t) === -1) continue;
+            if (out[i] == null || 'n?'.indexOf(out[i].t) === -1) continue;
 
             if (jj >= out[i].v.length - 1) {
               jj -= out[i].v.length;
@@ -17182,7 +17272,7 @@ function make_xlsx_lib(XLSX) {
           jj = ostr.indexOf(".") - 1;
 
           for (i = decpt; i >= 0; --i) {
-            if (out[i] == null || 'n?('.indexOf(out[i].t) === -1) continue;
+            if (out[i] == null || 'n?'.indexOf(out[i].t) === -1) continue;
             j = out[i].v.indexOf(".") > -1 && i === decpt ? out[i].v.indexOf(".") - 1 : out[i].v.length - 1;
             vv = out[i].v.substr(j + 1);
 
@@ -17214,7 +17304,7 @@ function make_xlsx_lib(XLSX) {
         }
       }
 
-      for (i = 0; i < out.length; ++i) if (out[i] != null && 'n(?'.indexOf(out[i].t) > -1) {
+      for (i = 0; i < out.length; ++i) if (out[i] != null && 'n?'.indexOf(out[i].t) > -1) {
         myv = flen > 1 && v < 0 && i > 0 && out[i - 1].v === "-" ? -v : v;
         out[i].v = write_num(out[i].t, out[i].v, myv);
         out[i].t = 't';
@@ -17312,6 +17402,8 @@ function make_xlsx_lib(XLSX) {
 
         case "number":
           if (fmt == 14 && o.dateNF) sfmt = o.dateNF;else sfmt = (o.table != null ? o.table : table_fmt)[fmt];
+          if (sfmt == null) sfmt = o.table && o.table[default_map[fmt]] || table_fmt[default_map[fmt]];
+          if (sfmt == null) sfmt = default_str[fmt] || "General";
           break;
       }
 
@@ -19592,17 +19684,25 @@ function make_xlsx_lib(XLSX) {
 
   var basedate = new Date(1899, 11, 30, 0, 0, 0); // 2209161600000
 
-  var dnthresh = basedate.getTime() + (new Date().getTimezoneOffset() - basedate.getTimezoneOffset()) * 60000;
-
   function datenum(v, date1904) {
     var epoch = v.getTime();
     if (date1904) epoch -= 1462 * 24 * 60 * 60 * 1000;
+    var dnthresh = basedate.getTime() + (v.getTimezoneOffset() - basedate.getTimezoneOffset()) * 60000;
     return (epoch - dnthresh) / (24 * 60 * 60 * 1000);
   }
+
+  var refdate = new Date();
+  var dnthresh = basedate.getTime() + (refdate.getTimezoneOffset() - basedate.getTimezoneOffset()) * 60000;
+  var refoffset = refdate.getTimezoneOffset();
 
   function numdate(v) {
     var out = new Date();
     out.setTime(v * 24 * 60 * 60 * 1000 + dnthresh);
+
+    if (out.getTimezoneOffset() !== refoffset) {
+      out.setTime(out.getTime() + (out.getTimezoneOffset() - refoffset) * 60000);
+    }
+
     return out;
   }
   /* ISO 8601 Duration */
@@ -20294,10 +20394,12 @@ function make_xlsx_lib(XLSX) {
     return "";
   }
 
-  function write_vt(s) {
+  function write_vt(s, xlsx) {
     switch (typeof s) {
       case 'string':
-        return writextag('vt:lpwstr', escapexml(s));
+        var o = writextag('vt:lpwstr', escapexml(s));
+        if (xlsx) o = o.replace(/&quot;/g, "_x0022_");
+        return o;
 
       case 'number':
         return writextag((s | 0) == s ? 'vt:i4' : 'vt:r8', escapexml(String(s)));
@@ -21122,7 +21224,7 @@ function make_xlsx_lib(XLSX) {
 
 
       i = j = 0;
-      var out = Buffer(data.length);
+      var out = new_raw_buf(data.length);
 
       for (c = 0; c != data.length; ++c) {
         i = i + 1 & 255;
@@ -21191,25 +21293,43 @@ function make_xlsx_lib(XLSX) {
 
   function split_cell(cstr) {
     return cstr.replace(/(\$?[A-Z]*)(\$?\d*)/, "$1,$2").split(",");
-  }
+  } //function decode_cell(cstr) { var splt = split_cell(cstr); return { c:decode_col(splt[0]), r:decode_row(splt[1]) }; }
+
 
   function decode_cell(cstr) {
-    var splt = split_cell(cstr);
+    var R = 0,
+        C = 0;
+
+    for (var i = 0; i < cstr.length; ++i) {
+      var cc = cstr.charCodeAt(i);
+      if (cc >= 48 && cc <= 57) R = 10 * R + (cc - 48);else if (cc >= 65 && cc <= 90) C = 26 * C + (cc - 64);
+    }
+
     return {
-      c: decode_col(splt[0]),
-      r: decode_row(splt[1])
+      c: C - 1,
+      r: R - 1
     };
-  }
+  } //function encode_cell(cell) { return encode_col(cell.c) + encode_row(cell.r); }
+
 
   function encode_cell(cell) {
-    return encode_col(cell.c) + encode_row(cell.r);
+    var col = cell.c + 1;
+    var s = "";
+
+    for (; col; col = (col - 1) / 26 | 0) s = String.fromCharCode((col - 1) % 26 + 65) + s;
+
+    return s + (cell.r + 1);
   }
 
   function decode_range(range) {
-    var x = range.split(":").map(decode_cell);
+    var idx = range.indexOf(":");
+    if (idx == -1) return {
+      s: decode_cell(range),
+      e: decode_cell(range)
+    };
     return {
-      s: x[0],
-      e: x[x.length - 1]
+      s: decode_cell(range.slice(0, idx)),
+      e: decode_cell(range.slice(idx + 1))
     };
   }
 
@@ -21321,6 +21441,7 @@ function make_xlsx_lib(XLSX) {
         _R = _origin.r;
         _C = _origin.c;
       }
+      if (!ws["!ref"]) ws["!ref"] = "A1:A1";
     }
 
     var range = {
@@ -21667,22 +21788,8 @@ function make_xlsx_lib(XLSX) {
   function write_Xnum(data, o) {
     return (o || new_buf(8)).write_shift(8, data, 'f');
   }
-  /* [MS-XLSB] 2.5.97.2 */
-
-
-  var BErr = {
-    0x00: "#NULL!",
-    0x07: "#DIV/0!",
-    0x0F: "#VALUE!",
-    0x17: "#REF!",
-    0x1D: "#NAME?",
-    0x24: "#NUM!",
-    0x2A: "#N/A",
-    0x2B: "#GETTING_DATA",
-    0xFF: "#WTF?"
-  };
-  var RBErr = evert_num(BErr);
   /* [MS-XLSB] 2.4.324 BrtColor */
+
 
   function parse_BrtColor(data) {
     var out = {};
@@ -22235,6 +22342,20 @@ function make_xlsx_lib(XLSX) {
   ]);
 
   var XLSIcv = dup(_XLSIcv);
+  /* [MS-XLSB] 2.5.97.2 */
+
+  var BErr = {
+    0x00: "#NULL!",
+    0x07: "#DIV/0!",
+    0x0F: "#VALUE!",
+    0x17: "#REF!",
+    0x1D: "#NAME?",
+    0x24: "#NUM!",
+    0x2A: "#N/A",
+    0x2B: "#GETTING_DATA",
+    0xFF: "#WTF?"
+  };
+  var RBErr = evert_num(BErr);
   /* Parts enumerated in OPC spec, MS-XLSB and MS-XLSX */
 
   /* 12.3 Part Summary <SpreadsheetML> */
@@ -22909,7 +23030,7 @@ function make_xlsx_lib(XLSX) {
 
       switch (f[2]) {
         case "string":
-          p[f[1]] = unescapexml(xml || "");
+          if (xml) p[f[1]] = unescapexml(xml);
           break;
 
         case "bool":
@@ -23071,7 +23192,7 @@ function make_xlsx_lib(XLSX) {
     var pid = 1;
     keys(cp).forEach(function custprop(k) {
       ++pid;
-      o[o.length] = writextag('property', write_vt(cp[k]), {
+      o[o.length] = writextag('property', write_vt(cp[k], true), {
         'fmtid': '{D5CDD505-2E9C-101B-9397-08002B2CF9AE}',
         'pid': pid,
         'name': escapexml(k)
@@ -24021,6 +24142,19 @@ function make_xlsx_lib(XLSX) {
     current_codepage = cp;
     return z;
   }
+
+  function write_XLUnicodeRichExtendedString(xlstr) {
+    var str = xlstr.t || "",
+        nfmts = 1;
+    var hdr = new_buf(3 + (nfmts > 1 ? 2 : 0));
+    hdr.write_shift(2, str.length);
+    hdr.write_shift(1, (nfmts > 1 ? 0x08 : 0x00) | 0x01);
+    if (nfmts > 1) hdr.write_shift(2, nfmts);
+    var otext = new_buf(2 * str.length);
+    otext.write_shift(2 * str.length, str, 'utf16le');
+    var out = [hdr, otext];
+    return bconcat(out);
+  }
   /* 2.5.296 XLUnicodeStringNoCch */
 
 
@@ -24720,6 +24854,21 @@ function make_xlsx_lib(XLSX) {
     strs.Unique = ucnt;
     return strs;
   }
+
+  function write_SST(sst, opts) {
+    var header = new_buf(8);
+    header.write_shift(4, sst.Count);
+    header.write_shift(4, sst.Unique);
+    var strs = [];
+
+    for (var j = 0; j < sst.length; ++j) strs[j] = write_XLUnicodeRichExtendedString(sst[j], opts);
+
+    var o = bconcat([header].concat(strs));
+    o.parts = [header.length].concat(strs.map(function (str) {
+      return str.length;
+    }));
+    return o;
+  }
   /* [MS-XLS] 2.4.107 */
 
 
@@ -24905,6 +25054,13 @@ function make_xlsx_lib(XLSX) {
     var cell = parse_XLSCell(blob);
     cell.isst = blob.read_shift(4);
     return cell;
+  }
+
+  function write_LabelSst(R, C, v, os) {
+    var o = new_buf(10);
+    write_XLSCell(R, C, os, o);
+    o.write_shift(4, v);
+    return o;
   }
   /* [MS-XLS] 2.4.148 */
 
@@ -25872,6 +26028,7 @@ function make_xlsx_lib(XLSX) {
       0xCB: 1253,
       0x00: 20127
     });
+    var DBF_SUPPORTED_VERSIONS = [0x02, 0x03, 0x30, 0x31, 0x83, 0x8B, 0x8C, 0xF5];
     /* TODO: find an actual specification */
 
     function dbf_to_aoa(buf, opts) {
@@ -26341,6 +26498,7 @@ function make_xlsx_lib(XLSX) {
     }
 
     return {
+      versions: DBF_SUPPORTED_VERSIONS,
       to_workbook: dbf_to_workbook,
       to_sheet: dbf_to_sheet,
       from_sheet: sheet_to_dbf
@@ -27180,9 +27338,17 @@ function make_xlsx_lib(XLSX) {
         }
       };
 
-      if (str.slice(0, 4) == "sep=" && str.charCodeAt(5) == 10) {
-        sep = str.charAt(4);
-        str = str.slice(6);
+      if (str.slice(0, 4) == "sep=") {
+        // If the line ends in \r\n
+        if (str.charCodeAt(5) == 13 && str.charCodeAt(6) == 10) {
+          sep = str.charAt(4);
+          str = str.slice(7);
+        } // If line ends in \r OR \n
+        else if (str.charCodeAt(5) == 13 || str.charCodeAt(5) == 10) {
+            //
+            sep = str.charAt(4);
+            str = str.slice(6);
+          }
       } else sep = guess_sep(str.slice(0, 1024));
 
       var R = 0,
@@ -27291,6 +27457,7 @@ function make_xlsx_lib(XLSX) {
     }
 
     function prn_to_sheet_str(str, opts) {
+      if (!(opts && opts.PRN)) return dsv_to_sheet_str(str, opts);
       if (str.slice(0, 4) == "sep=") return dsv_to_sheet_str(str, opts);
       if (str.indexOf("\t") >= 0 || str.indexOf(",") >= 0 || str.indexOf(";") >= 0) return dsv_to_sheet_str(str, opts);
       return aoa_to_sheet(prn_to_aoa_str(str, opts), opts);
@@ -31119,9 +31286,9 @@ function make_xlsx_lib(XLSX) {
   /* 18.14 Supplementary Workbook Data */
 
 
-  function parse_xlink_xml() {} //var opts = _opts || {};
-  //if(opts.WTF) throw "XLSX External Link";
-
+  function parse_xlink_xml() {//var opts = _opts || {};
+    //if(opts.WTF) throw "XLSX External Link";
+  }
   /* [MS-XLSB] 2.1.7.25 External Link */
 
 
@@ -32900,11 +33067,13 @@ function make_xlsx_lib(XLSX) {
     PtgNe: "<>",
     PtgPower: "^",
     PtgSub: "-"
-  };
+  }; // List of invalid characters needs to be tested further
+
+  var quoteCharacters = new RegExp(/[^\w\u4E00-\u9FFF\u3040-\u30FF]/);
 
   function formula_quote_sheet_name(sname, opts) {
     if (!sname && !(opts && opts.biff <= 5 && opts.biff >= 2)) throw new Error("empty sheet name");
-    if (sname.indexOf(" ") > -1) return "'" + sname + "'";
+    if (quoteCharacters.test(sname)) return "'" + sname + "'";
     return sname;
   }
 
@@ -37433,6 +37602,9 @@ function make_xlsx_lib(XLSX) {
         case 0x01F3:
         /* 'BrtDRef' */
 
+        case 0x01FB:
+        /* 'BrtDXF' */
+
         case 0x0226:
         /* 'BrtDrawing' */
 
@@ -38333,7 +38505,7 @@ function make_xlsx_lib(XLSX) {
                 wb.WBProps[w[0]] = y[w[0]];
             }
           });
-          if (y.codeName) wb.WBProps.CodeName = y.codeName;
+          if (y.codeName) wb.WBProps.CodeName = utf8read(y.codeName);
           break;
 
         case '</workbookPr>':
@@ -39380,7 +39552,8 @@ function make_xlsx_lib(XLSX) {
       case 'String':
         cell.t = 's';
         cell.r = xlml_fixstr(unescapexml(xml));
-        cell.v = xml.indexOf("<") > -1 ? unescapexml(ss || xml) : cell.r;
+        cell.v = xml.indexOf("<") > -1 ? unescapexml(ss || xml).replace(/<.*?>/g, "") : cell.r; // todo: BR etc
+
         break;
 
       case 'DateTime':
@@ -39463,7 +39636,7 @@ function make_xlsx_lib(XLSX) {
   /* UOS uses CJK in tags */
 
 
-  var xlmlregex = /<(\/?)([^\s?>!\/:]*:|)([^\s?>:\/]+)[^>]*>/mg; //var xlmlregex = /<(\/?)([a-z0-9]*:|)(\w+)[^>]*>/mg;
+  var xlmlregex = /<(\/?)([^\s?><!\/:]*:|)([^\s?<>:\/]+)(?:[\s?:\/][^>]*)?>/mg; //var xlmlregex = /<(\/?)([a-z0-9]*:|)(\w+)[^>]*>/mg;
 
   function parse_xlml_xml(d, _opts) {
     var opts = _opts || {};
@@ -39534,11 +39707,24 @@ function make_xlsx_lib(XLSX) {
         wsprops = {};
     xlmlregex.lastIndex = 0;
     str = str.replace(/<!--([\s\S]*?)-->/mg, "");
+    var raw_Rn3 = "";
 
-    while (Rn = xlmlregex.exec(str)) switch (Rn[3]) {
-      case 'Data':
+    while (Rn = xlmlregex.exec(str)) switch (Rn[3] = (raw_Rn3 = Rn[3]).toLowerCase()) {
+      case 'data'
+      /*case 'Data'*/
+      :
+        if (raw_Rn3 == "data") {
+          if (Rn[1] === '/') {
+            if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
+          } else if (Rn[0].charAt(Rn[0].length - 2) !== '/') state.push([Rn[3], true]);
+
+          break;
+        }
+
         if (state[state.length - 1][1]) break;
-        if (Rn[1] === '/') parse_xlml_data(str.slice(didx, Rn.index), ss, dtag, state[state.length - 1][0] == "Comment" ? comment : cell, {
+        if (Rn[1] === '/') parse_xlml_data(str.slice(didx, Rn.index), ss, dtag, state[state.length - 1][0] ==
+        /*"Comment"*/
+        "comment" ? comment : cell, {
           c: c,
           r: r
         }, styles, cstys[c], row, arrayf, opts);else {
@@ -39548,7 +39734,9 @@ function make_xlsx_lib(XLSX) {
         }
         break;
 
-      case 'Cell':
+      case 'cell'
+      /*case 'Cell'*/
+      :
         if (Rn[1] === '/') {
           if (comments.length > 0) cell.c = comments;
 
@@ -39614,7 +39802,9 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'Row':
+      case 'row'
+      /*case 'Row'*/
+      :
         if (Rn[1] === '/' || Rn[0].slice(-2) === "/>") {
           if (r < refguess.s.r) refguess.s.r = r;
           if (r > refguess.e.r) refguess.e.r = r;
@@ -39645,7 +39835,9 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'Worksheet':
+      case 'worksheet'
+      /*case 'Worksheet'*/
+      :
         /* TODO: read range from FullRows/FullColumns */
         if (Rn[1] === '/') {
           if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
@@ -39693,7 +39885,9 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'Table':
+      case 'table'
+      /*case 'Table'*/
+      :
         if (Rn[1] === '/') {
           if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
         } else if (Rn[0].slice(-2) == "/>") break;else {
@@ -39705,11 +39899,15 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'Style':
+      case 'style'
+      /*case 'Style'*/
+      :
         if (Rn[1] === '/') process_style_xlml(styles, stag, opts);else stag = xlml_parsexmltag(Rn[0]);
         break;
 
-      case 'NumberFormat':
+      case 'numberformat'
+      /*case 'NumberFormat'*/
+      :
         stag.nf = unescapexml(xlml_parsexmltag(Rn[0]).Format || "General");
         if (XLMLFormatMap[stag.nf]) stag.nf = XLMLFormatMap[stag.nf];
 
@@ -39721,8 +39919,12 @@ function make_xlsx_lib(XLSX) {
         }
         break;
 
-      case 'Column':
-        if (state[state.length - 1][0] !== 'Table') break;
+      case 'column'
+      /*case 'Column'*/
+      :
+        if (state[state.length - 1][0] !==
+        /*'Table'*/
+        'table') break;
         csty = xlml_parsexmltag(Rn[0]);
 
         if (csty.Hidden) {
@@ -39746,7 +39948,10 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'NamedRange':
+      case 'namedrange'
+      /*case 'NamedRange'*/
+      :
+        if (Rn[1] === '/') break;
         if (!Workbook.Names) Workbook.Names = [];
 
         var _NamedRange = parsexmltag(Rn[0]);
@@ -39762,86 +39967,177 @@ function make_xlsx_lib(XLSX) {
         Workbook.Names.push(_DefinedName);
         break;
 
-      case 'NamedCell':
+      case 'namedcell'
+      /*case 'NamedCell'*/
+      :
         break;
 
-      case 'B':
+      case 'b'
+      /*case 'B'*/
+      :
         break;
 
-      case 'I':
+      case 'i'
+      /*case 'I'*/
+      :
         break;
 
-      case 'U':
+      case 'u'
+      /*case 'U'*/
+      :
         break;
 
-      case 'S':
+      case 's'
+      /*case 'S'*/
+      :
         break;
 
-      case 'Sub':
+      case 'em'
+      /*case 'EM'*/
+      :
         break;
 
-      case 'Sup':
+      case 'h2'
+      /*case 'H2'*/
+      :
         break;
 
-      case 'Span':
+      case 'h3'
+      /*case 'H3'*/
+      :
         break;
 
-      case 'Alignment':
+      case 'sub'
+      /*case 'Sub'*/
+      :
         break;
 
-      case 'Borders':
+      case 'sup'
+      /*case 'Sup'*/
+      :
         break;
 
-      case 'Border':
+      case 'span'
+      /*case 'Span'*/
+      :
         break;
 
-      case 'Font':
+      case 'alignment'
+      /*case 'Alignment'*/
+      :
+        break;
+
+      case 'borders'
+      /*case 'Borders'*/
+      :
+        break;
+
+      case 'border'
+      /*case 'Border'*/
+      :
+        break;
+
+      case 'font'
+      /*case 'Font'*/
+      :
         if (Rn[0].slice(-2) === "/>") break;else if (Rn[1] === "/") ss += str.slice(fidx, Rn.index);else fidx = Rn.index + Rn[0].length;
         break;
 
-      case 'Interior':
+      case 'interior'
+      /*case 'Interior'*/
+      :
         if (!opts.cellStyles) break;
         stag.Interior = xlml_parsexmltag(Rn[0]);
         break;
 
-      case 'Protection':
+      case 'protection'
+      /*case 'Protection'*/
+      :
         break;
 
-      case 'Author':
-      case 'Title':
-      case 'Description':
-      case 'Created':
-      case 'Keywords':
-      case 'Subject':
-      case 'Category':
-      case 'Company':
-      case 'LastAuthor':
-      case 'LastSaved':
-      case 'LastPrinted':
-      case 'Version':
-      case 'Revision':
-      case 'TotalTime':
-      case 'HyperlinkBase':
-      case 'Manager':
-      case 'ContentStatus':
-      case 'Identifier':
-      case 'Language':
-      case 'AppName':
-        if (Rn[0].slice(-2) === "/>") break;else if (Rn[1] === "/") xlml_set_prop(Props, Rn[3], str.slice(pidx, Rn.index));else pidx = Rn.index + Rn[0].length;
+      case 'author'
+      /*case 'Author'*/
+      :
+      case 'title'
+      /*case 'Title'*/
+      :
+      case 'description'
+      /*case 'Description'*/
+      :
+      case 'created'
+      /*case 'Created'*/
+      :
+      case 'keywords'
+      /*case 'Keywords'*/
+      :
+      case 'subject'
+      /*case 'Subject'*/
+      :
+      case 'category'
+      /*case 'Category'*/
+      :
+      case 'company'
+      /*case 'Company'*/
+      :
+      case 'lastauthor'
+      /*case 'LastAuthor'*/
+      :
+      case 'lastsaved'
+      /*case 'LastSaved'*/
+      :
+      case 'lastprinted'
+      /*case 'LastPrinted'*/
+      :
+      case 'version'
+      /*case 'Version'*/
+      :
+      case 'revision'
+      /*case 'Revision'*/
+      :
+      case 'totaltime'
+      /*case 'TotalTime'*/
+      :
+      case 'hyperlinkbase'
+      /*case 'HyperlinkBase'*/
+      :
+      case 'manager'
+      /*case 'Manager'*/
+      :
+      case 'contentstatus'
+      /*case 'ContentStatus'*/
+      :
+      case 'identifier'
+      /*case 'Identifier'*/
+      :
+      case 'language'
+      /*case 'Language'*/
+      :
+      case 'appname'
+      /*case 'AppName'*/
+      :
+        if (Rn[0].slice(-2) === "/>") break;else if (Rn[1] === "/") xlml_set_prop(Props, raw_Rn3, str.slice(pidx, Rn.index));else pidx = Rn.index + Rn[0].length;
         break;
 
-      case 'Paragraphs':
+      case 'paragraphs'
+      /*case 'Paragraphs'*/
+      :
         break;
 
-      case 'Styles':
-      case 'Workbook':
+      case 'styles'
+      /*case 'Styles'*/
+      :
+      case 'workbook'
+      /*case 'Workbook'*/
+      :
         if (Rn[1] === '/') {
           if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
         } else state.push([Rn[3], false]);
 
         break;
 
-      case 'Comment':
+      case 'comment'
+      /*case 'Comment'*/
+      :
         if (Rn[1] === '/') {
           if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
           xlml_clean_comment(comment);
@@ -39856,7 +40152,9 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'AutoFilter':
+      case 'autofilter'
+      /*case 'AutoFilter'*/
+      :
         if (Rn[1] === '/') {
           if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
         } else if (Rn[0].charAt(Rn[0].length - 2) !== '/') {
@@ -39869,10 +40167,14 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'Name':
+      case 'name'
+      /*case 'Name'*/
+      :
         break;
 
-      case 'DataValidation':
+      case 'datavalidation'
+      /*case 'DataValidation'*/
+      :
         if (Rn[1] === '/') {
           if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
         } else {
@@ -39881,25 +40183,66 @@ function make_xlsx_lib(XLSX) {
 
         break;
 
-      case 'ComponentOptions':
-      case 'DocumentProperties':
-      case 'CustomDocumentProperties':
-      case 'OfficeDocumentSettings':
-      case 'PivotTable':
-      case 'PivotCache':
-      case 'Names':
-      case 'MapInfo':
-      case 'PageBreaks':
-      case 'QueryTable':
-      case 'Sorting':
-      case 'Schema':
-      case 'data':
-      case 'ConditionalFormatting':
-      case 'SmartTagType':
-      case 'SmartTags':
-      case 'ExcelWorkbook':
-      case 'WorkbookOptions':
-      case 'WorksheetOptions':
+      case 'pixelsperinch'
+      /*case 'PixelsPerInch'*/
+      :
+        break;
+
+      case 'componentoptions'
+      /*case 'ComponentOptions'*/
+      :
+      case 'documentproperties'
+      /*case 'DocumentProperties'*/
+      :
+      case 'customdocumentproperties'
+      /*case 'CustomDocumentProperties'*/
+      :
+      case 'officedocumentsettings'
+      /*case 'OfficeDocumentSettings'*/
+      :
+      case 'pivottable'
+      /*case 'PivotTable'*/
+      :
+      case 'pivotcache'
+      /*case 'PivotCache'*/
+      :
+      case 'names'
+      /*case 'Names'*/
+      :
+      case 'mapinfo'
+      /*case 'MapInfo'*/
+      :
+      case 'pagebreaks'
+      /*case 'PageBreaks'*/
+      :
+      case 'querytable'
+      /*case 'QueryTable'*/
+      :
+      case 'sorting'
+      /*case 'Sorting'*/
+      :
+      case 'schema'
+      /*case 'Schema'*/
+      : //case 'data' /*case 'data'*/:
+
+      case 'conditionalformatting'
+      /*case 'ConditionalFormatting'*/
+      :
+      case 'smarttagtype'
+      /*case 'SmartTagType'*/
+      :
+      case 'smarttags'
+      /*case 'SmartTags'*/
+      :
+      case 'excelworkbook'
+      /*case 'ExcelWorkbook'*/
+      :
+      case 'workbookoptions'
+      /*case 'WorkbookOptions'*/
+      :
+      case 'worksheetoptions'
+      /*case 'WorksheetOptions'*/
+      :
         if (Rn[1] === '/') {
           if ((tmp = state.pop())[0] !== Rn[3]) throw new Error("Bad state: " + tmp.join("|"));
         } else if (Rn[0].charAt(Rn[0].length - 2) !== '/') state.push([Rn[3], true]);
@@ -39911,45 +40254,65 @@ function make_xlsx_lib(XLSX) {
         if (state.length == 0 && Rn[3] == "document") return parse_fods(str, opts);
         /* UOS file root is <uof:UOF> */
 
-        if (state.length == 0 && Rn[3] == "UOF") return parse_fods(str, opts);
+        if (state.length == 0 && Rn[3] == "uof"
+        /*"UOF"*/
+        ) return parse_fods(str, opts);
         var seen = true;
 
         switch (state[state.length - 1][0]) {
           /* OfficeDocumentSettings */
-          case 'OfficeDocumentSettings':
+          case 'officedocumentsettings'
+          /*case 'OfficeDocumentSettings'*/
+          :
             switch (Rn[3]) {
-              case 'AllowPNG':
+              case 'allowpng'
+              /*case 'AllowPNG'*/
+              :
                 break;
 
-              case 'RemovePersonalInformation':
+              case 'removepersonalinformation'
+              /*case 'RemovePersonalInformation'*/
+              :
                 break;
 
-              case 'DownloadComponents':
+              case 'downloadcomponents'
+              /*case 'DownloadComponents'*/
+              :
                 break;
 
-              case 'LocationOfComponents':
+              case 'locationofcomponents'
+              /*case 'LocationOfComponents'*/
+              :
                 break;
 
-              case 'Colors':
+              case 'colors'
+              /*case 'Colors'*/
+              :
                 break;
 
-              case 'Color':
+              case 'color'
+              /*case 'Color'*/
+              :
                 break;
 
-              case 'Index':
+              case 'index'
+              /*case 'Index'*/
+              :
                 break;
 
-              case 'RGB':
+              case 'rgb'
+              /*case 'RGB'*/
+              :
                 break;
 
-              case 'PixelsPerInch':
-                break;
-              // TODO: set PPI
-
-              case 'TargetScreenSize':
+              case 'targetscreensize'
+              /*case 'TargetScreenSize'*/
+              :
                 break;
 
-              case 'ReadOnlyRecommended':
+              case 'readonlyrecommended'
+              /*case 'ReadOnlyRecommended'*/
+              :
                 break;
 
               default:
@@ -39960,30 +40323,48 @@ function make_xlsx_lib(XLSX) {
 
           /* ComponentOptions */
 
-          case 'ComponentOptions':
+          case 'componentoptions'
+          /*case 'ComponentOptions'*/
+          :
             switch (Rn[3]) {
-              case 'Toolbar':
+              case 'toolbar'
+              /*case 'Toolbar'*/
+              :
                 break;
 
-              case 'HideOfficeLogo':
+              case 'hideofficelogo'
+              /*case 'HideOfficeLogo'*/
+              :
                 break;
 
-              case 'SpreadsheetAutoFit':
+              case 'spreadsheetautofit'
+              /*case 'SpreadsheetAutoFit'*/
+              :
                 break;
 
-              case 'Label':
+              case 'label'
+              /*case 'Label'*/
+              :
                 break;
 
-              case 'Caption':
+              case 'caption'
+              /*case 'Caption'*/
+              :
                 break;
 
-              case 'MaxHeight':
+              case 'maxheight'
+              /*case 'MaxHeight'*/
+              :
                 break;
 
-              case 'MaxWidth':
+              case 'maxwidth'
+              /*case 'MaxWidth'*/
+              :
                 break;
 
-              case 'NextSheetNumber':
+              case 'nextsheetnumber'
+              /*case 'NextSheetNumber'*/
+              :
                 break;
 
               default:
@@ -39994,145 +40375,239 @@ function make_xlsx_lib(XLSX) {
 
           /* ExcelWorkbook */
 
-          case 'ExcelWorkbook':
+          case 'excelworkbook'
+          /*case 'ExcelWorkbook'*/
+          :
             switch (Rn[3]) {
-              case 'Date1904':
+              case 'date1904'
+              /*case 'Date1904'*/
+              :
                 Workbook.WBProps.date1904 = true;
                 break;
 
-              case 'WindowHeight':
+              case 'windowheight'
+              /*case 'WindowHeight'*/
+              :
                 break;
 
-              case 'WindowWidth':
+              case 'windowwidth'
+              /*case 'WindowWidth'*/
+              :
                 break;
 
-              case 'WindowTopX':
+              case 'windowtopx'
+              /*case 'WindowTopX'*/
+              :
                 break;
 
-              case 'WindowTopY':
+              case 'windowtopy'
+              /*case 'WindowTopY'*/
+              :
                 break;
 
-              case 'TabRatio':
+              case 'tabratio'
+              /*case 'TabRatio'*/
+              :
                 break;
 
-              case 'ProtectStructure':
+              case 'protectstructure'
+              /*case 'ProtectStructure'*/
+              :
                 break;
 
-              case 'ProtectWindow':
+              case 'protectwindow'
+              /*case 'ProtectWindow'*/
+              :
                 break;
 
-              case 'ProtectWindows':
+              case 'protectwindows'
+              /*case 'ProtectWindows'*/
+              :
                 break;
 
-              case 'ActiveSheet':
+              case 'activesheet'
+              /*case 'ActiveSheet'*/
+              :
                 break;
 
-              case 'DisplayInkNotes':
+              case 'displayinknotes'
+              /*case 'DisplayInkNotes'*/
+              :
                 break;
 
-              case 'FirstVisibleSheet':
+              case 'firstvisiblesheet'
+              /*case 'FirstVisibleSheet'*/
+              :
                 break;
 
-              case 'SupBook':
+              case 'supbook'
+              /*case 'SupBook'*/
+              :
                 break;
 
-              case 'SheetName':
+              case 'sheetname'
+              /*case 'SheetName'*/
+              :
                 break;
 
-              case 'SheetIndex':
+              case 'sheetindex'
+              /*case 'SheetIndex'*/
+              :
                 break;
 
-              case 'SheetIndexFirst':
+              case 'sheetindexfirst'
+              /*case 'SheetIndexFirst'*/
+              :
                 break;
 
-              case 'SheetIndexLast':
+              case 'sheetindexlast'
+              /*case 'SheetIndexLast'*/
+              :
                 break;
 
-              case 'Dll':
+              case 'dll'
+              /*case 'Dll'*/
+              :
                 break;
 
-              case 'AcceptLabelsInFormulas':
+              case 'acceptlabelsinformulas'
+              /*case 'AcceptLabelsInFormulas'*/
+              :
                 break;
 
-              case 'DoNotSaveLinkValues':
+              case 'donotsavelinkvalues'
+              /*case 'DoNotSaveLinkValues'*/
+              :
                 break;
 
-              case 'Iteration':
+              case 'iteration'
+              /*case 'Iteration'*/
+              :
                 break;
 
-              case 'MaxIterations':
+              case 'maxiterations'
+              /*case 'MaxIterations'*/
+              :
                 break;
 
-              case 'MaxChange':
+              case 'maxchange'
+              /*case 'MaxChange'*/
+              :
                 break;
 
-              case 'Path':
+              case 'path'
+              /*case 'Path'*/
+              :
                 break;
 
-              case 'Xct':
+              case 'xct'
+              /*case 'Xct'*/
+              :
                 break;
 
-              case 'Count':
+              case 'count'
+              /*case 'Count'*/
+              :
                 break;
 
-              case 'SelectedSheets':
+              case 'selectedsheets'
+              /*case 'SelectedSheets'*/
+              :
                 break;
 
-              case 'Calculation':
+              case 'calculation'
+              /*case 'Calculation'*/
+              :
                 break;
 
-              case 'Uncalced':
+              case 'uncalced'
+              /*case 'Uncalced'*/
+              :
                 break;
 
-              case 'StartupPrompt':
+              case 'startupprompt'
+              /*case 'StartupPrompt'*/
+              :
                 break;
 
-              case 'Crn':
+              case 'crn'
+              /*case 'Crn'*/
+              :
                 break;
 
-              case 'ExternName':
+              case 'externname'
+              /*case 'ExternName'*/
+              :
                 break;
 
-              case 'Formula':
+              case 'formula'
+              /*case 'Formula'*/
+              :
                 break;
 
-              case 'ColFirst':
+              case 'colfirst'
+              /*case 'ColFirst'*/
+              :
                 break;
 
-              case 'ColLast':
+              case 'collast'
+              /*case 'ColLast'*/
+              :
                 break;
 
-              case 'WantAdvise':
+              case 'wantadvise'
+              /*case 'WantAdvise'*/
+              :
                 break;
 
-              case 'Boolean':
+              case 'boolean'
+              /*case 'Boolean'*/
+              :
                 break;
 
-              case 'Error':
+              case 'error'
+              /*case 'Error'*/
+              :
                 break;
 
-              case 'Text':
+              case 'text'
+              /*case 'Text'*/
+              :
                 break;
 
-              case 'OLE':
+              case 'ole'
+              /*case 'OLE'*/
+              :
                 break;
 
-              case 'NoAutoRecover':
+              case 'noautorecover'
+              /*case 'NoAutoRecover'*/
+              :
                 break;
 
-              case 'PublishObjects':
+              case 'publishobjects'
+              /*case 'PublishObjects'*/
+              :
                 break;
 
-              case 'DoNotCalculateBeforeSave':
+              case 'donotcalculatebeforesave'
+              /*case 'DoNotCalculateBeforeSave'*/
+              :
                 break;
 
-              case 'Number':
+              case 'number'
+              /*case 'Number'*/
+              :
                 break;
 
-              case 'RefModeR1C1':
+              case 'refmoder1c1'
+              /*case 'RefModeR1C1'*/
+              :
                 break;
 
-              case 'EmbedSaveSmartTags':
+              case 'embedsavesmarttags'
+              /*case 'EmbedSaveSmartTags'*/
+              :
                 break;
 
               default:
@@ -40143,15 +40618,23 @@ function make_xlsx_lib(XLSX) {
 
           /* WorkbookOptions */
 
-          case 'WorkbookOptions':
+          case 'workbookoptions'
+          /*case 'WorkbookOptions'*/
+          :
             switch (Rn[3]) {
-              case 'OWCVersion':
+              case 'owcversion'
+              /*case 'OWCVersion'*/
+              :
                 break;
 
-              case 'Height':
+              case 'height'
+              /*case 'Height'*/
+              :
                 break;
 
-              case 'Width':
+              case 'width'
+              /*case 'Width'*/
+              :
                 break;
 
               default:
@@ -40162,9 +40645,13 @@ function make_xlsx_lib(XLSX) {
 
           /* WorksheetOptions */
 
-          case 'WorksheetOptions':
+          case 'worksheetoptions'
+          /*case 'WorksheetOptions'*/
+          :
             switch (Rn[3]) {
-              case 'Visible':
+              case 'visible'
+              /*case 'Visible'*/
+              :
                 if (Rn[0].slice(-2) === "/>") {
                   /* empty */
                 } else if (Rn[1] === "/") switch (str.slice(pidx, Rn.index)) {
@@ -40179,17 +40666,23 @@ function make_xlsx_lib(XLSX) {
 
                 break;
 
-              case 'Header':
+              case 'header'
+              /*case 'Header'*/
+              :
                 if (!cursheet['!margins']) default_margins(cursheet['!margins'] = {}, 'xlml');
                 cursheet['!margins'].header = parsexmltag(Rn[0]).Margin;
                 break;
 
-              case 'Footer':
+              case 'footer'
+              /*case 'Footer'*/
+              :
                 if (!cursheet['!margins']) default_margins(cursheet['!margins'] = {}, 'xlml');
                 cursheet['!margins'].footer = parsexmltag(Rn[0]).Margin;
                 break;
 
-              case 'PageMargins':
+              case 'pagemargins'
+              /*case 'PageMargins'*/
+              :
                 var pagemargins = parsexmltag(Rn[0]);
                 if (!cursheet['!margins']) default_margins(cursheet['!margins'] = {}, 'xlml');
                 if (pagemargins.Top) cursheet['!margins'].top = pagemargins.Top;
@@ -40198,206 +40691,340 @@ function make_xlsx_lib(XLSX) {
                 if (pagemargins.Bottom) cursheet['!margins'].bottom = pagemargins.Bottom;
                 break;
 
-              case 'DisplayRightToLeft':
+              case 'displayrighttoleft'
+              /*case 'DisplayRightToLeft'*/
+              :
                 if (!Workbook.Views) Workbook.Views = [];
                 if (!Workbook.Views[0]) Workbook.Views[0] = {};
                 Workbook.Views[0].RTL = true;
                 break;
 
-              case 'FreezePanes':
+              case 'freezepanes'
+              /*case 'FreezePanes'*/
+              :
                 break;
 
-              case 'FrozenNoSplit':
+              case 'frozennosplit'
+              /*case 'FrozenNoSplit'*/
+              :
                 break;
 
-              case 'SplitHorizontal':
-              case 'SplitVertical':
+              case 'splithorizontal'
+              /*case 'SplitHorizontal'*/
+              :
+              case 'splitvertical'
+              /*case 'SplitVertical'*/
+              :
                 break;
 
-              case 'DoNotDisplayGridlines':
+              case 'donotdisplaygridlines'
+              /*case 'DoNotDisplayGridlines'*/
+              :
                 break;
 
-              case 'TopRowBottomPane':
+              case 'toprowbottompane'
+              /*case 'TopRowBottomPane'*/
+              :
                 break;
 
-              case 'LeftColumnRightPane':
+              case 'leftcolumnrightpane'
+              /*case 'LeftColumnRightPane'*/
+              :
                 break;
 
-              case 'Unsynced':
+              case 'unsynced'
+              /*case 'Unsynced'*/
+              :
                 break;
 
-              case 'Print':
+              case 'print'
+              /*case 'Print'*/
+              :
                 break;
 
-              case 'Panes':
+              case 'panes'
+              /*case 'Panes'*/
+              :
                 break;
 
-              case 'Scale':
+              case 'scale'
+              /*case 'Scale'*/
+              :
                 break;
 
-              case 'Pane':
+              case 'pane'
+              /*case 'Pane'*/
+              :
                 break;
 
-              case 'Number':
+              case 'number'
+              /*case 'Number'*/
+              :
                 break;
 
-              case 'Layout':
+              case 'layout'
+              /*case 'Layout'*/
+              :
                 break;
 
-              case 'PageSetup':
+              case 'pagesetup'
+              /*case 'PageSetup'*/
+              :
                 break;
 
-              case 'Selected':
+              case 'selected'
+              /*case 'Selected'*/
+              :
                 break;
 
-              case 'ProtectObjects':
+              case 'protectobjects'
+              /*case 'ProtectObjects'*/
+              :
                 break;
 
-              case 'EnableSelection':
+              case 'enableselection'
+              /*case 'EnableSelection'*/
+              :
                 break;
 
-              case 'ProtectScenarios':
+              case 'protectscenarios'
+              /*case 'ProtectScenarios'*/
+              :
                 break;
 
-              case 'ValidPrinterInfo':
+              case 'validprinterinfo'
+              /*case 'ValidPrinterInfo'*/
+              :
                 break;
 
-              case 'HorizontalResolution':
+              case 'horizontalresolution'
+              /*case 'HorizontalResolution'*/
+              :
                 break;
 
-              case 'VerticalResolution':
+              case 'verticalresolution'
+              /*case 'VerticalResolution'*/
+              :
                 break;
 
-              case 'NumberofCopies':
+              case 'numberofcopies'
+              /*case 'NumberofCopies'*/
+              :
                 break;
 
-              case 'ActiveRow':
+              case 'activerow'
+              /*case 'ActiveRow'*/
+              :
                 break;
 
-              case 'ActiveCol':
+              case 'activecol'
+              /*case 'ActiveCol'*/
+              :
                 break;
 
-              case 'ActivePane':
+              case 'activepane'
+              /*case 'ActivePane'*/
+              :
                 break;
 
-              case 'TopRowVisible':
+              case 'toprowvisible'
+              /*case 'TopRowVisible'*/
+              :
                 break;
 
-              case 'LeftColumnVisible':
+              case 'leftcolumnvisible'
+              /*case 'LeftColumnVisible'*/
+              :
                 break;
 
-              case 'FitToPage':
+              case 'fittopage'
+              /*case 'FitToPage'*/
+              :
                 break;
 
-              case 'RangeSelection':
+              case 'rangeselection'
+              /*case 'RangeSelection'*/
+              :
                 break;
 
-              case 'PaperSizeIndex':
+              case 'papersizeindex'
+              /*case 'PaperSizeIndex'*/
+              :
                 break;
 
-              case 'PageLayoutZoom':
+              case 'pagelayoutzoom'
+              /*case 'PageLayoutZoom'*/
+              :
                 break;
 
-              case 'PageBreakZoom':
+              case 'pagebreakzoom'
+              /*case 'PageBreakZoom'*/
+              :
                 break;
 
-              case 'FilterOn':
+              case 'filteron'
+              /*case 'FilterOn'*/
+              :
                 break;
 
-              case 'FitWidth':
+              case 'fitwidth'
+              /*case 'FitWidth'*/
+              :
                 break;
 
-              case 'FitHeight':
+              case 'fitheight'
+              /*case 'FitHeight'*/
+              :
                 break;
 
-              case 'CommentsLayout':
+              case 'commentslayout'
+              /*case 'CommentsLayout'*/
+              :
                 break;
 
-              case 'Zoom':
+              case 'zoom'
+              /*case 'Zoom'*/
+              :
                 break;
 
-              case 'LeftToRight':
+              case 'lefttoright'
+              /*case 'LeftToRight'*/
+              :
                 break;
 
-              case 'Gridlines':
+              case 'gridlines'
+              /*case 'Gridlines'*/
+              :
                 break;
 
-              case 'AllowSort':
+              case 'allowsort'
+              /*case 'AllowSort'*/
+              :
                 break;
 
-              case 'AllowFilter':
+              case 'allowfilter'
+              /*case 'AllowFilter'*/
+              :
                 break;
 
-              case 'AllowInsertRows':
+              case 'allowinsertrows'
+              /*case 'AllowInsertRows'*/
+              :
                 break;
 
-              case 'AllowDeleteRows':
+              case 'allowdeleterows'
+              /*case 'AllowDeleteRows'*/
+              :
                 break;
 
-              case 'AllowInsertCols':
+              case 'allowinsertcols'
+              /*case 'AllowInsertCols'*/
+              :
                 break;
 
-              case 'AllowDeleteCols':
+              case 'allowdeletecols'
+              /*case 'AllowDeleteCols'*/
+              :
                 break;
 
-              case 'AllowInsertHyperlinks':
+              case 'allowinserthyperlinks'
+              /*case 'AllowInsertHyperlinks'*/
+              :
                 break;
 
-              case 'AllowFormatCells':
+              case 'allowformatcells'
+              /*case 'AllowFormatCells'*/
+              :
                 break;
 
-              case 'AllowSizeCols':
+              case 'allowsizecols'
+              /*case 'AllowSizeCols'*/
+              :
                 break;
 
-              case 'AllowSizeRows':
+              case 'allowsizerows'
+              /*case 'AllowSizeRows'*/
+              :
                 break;
 
-              case 'NoSummaryRowsBelowDetail':
+              case 'nosummaryrowsbelowdetail'
+              /*case 'NoSummaryRowsBelowDetail'*/
+              :
                 break;
 
-              case 'TabColorIndex':
+              case 'tabcolorindex'
+              /*case 'TabColorIndex'*/
+              :
                 break;
 
-              case 'DoNotDisplayHeadings':
+              case 'donotdisplayheadings'
+              /*case 'DoNotDisplayHeadings'*/
+              :
                 break;
 
-              case 'ShowPageLayoutZoom':
+              case 'showpagelayoutzoom'
+              /*case 'ShowPageLayoutZoom'*/
+              :
                 break;
 
-              case 'NoSummaryColumnsRightDetail':
+              case 'nosummarycolumnsrightdetail'
+              /*case 'NoSummaryColumnsRightDetail'*/
+              :
                 break;
 
-              case 'BlackAndWhite':
+              case 'blackandwhite'
+              /*case 'BlackAndWhite'*/
+              :
                 break;
 
-              case 'DoNotDisplayZeros':
+              case 'donotdisplayzeros'
+              /*case 'DoNotDisplayZeros'*/
+              :
                 break;
 
-              case 'DisplayPageBreak':
+              case 'displaypagebreak'
+              /*case 'DisplayPageBreak'*/
+              :
                 break;
 
-              case 'RowColHeadings':
+              case 'rowcolheadings'
+              /*case 'RowColHeadings'*/
+              :
                 break;
 
-              case 'DoNotDisplayOutline':
+              case 'donotdisplayoutline'
+              /*case 'DoNotDisplayOutline'*/
+              :
                 break;
 
-              case 'NoOrientation':
+              case 'noorientation'
+              /*case 'NoOrientation'*/
+              :
                 break;
 
-              case 'AllowUsePivotTables':
+              case 'allowusepivottables'
+              /*case 'AllowUsePivotTables'*/
+              :
                 break;
 
-              case 'ZeroHeight':
+              case 'zeroheight'
+              /*case 'ZeroHeight'*/
+              :
                 break;
 
-              case 'ViewableRange':
+              case 'viewablerange'
+              /*case 'ViewableRange'*/
+              :
                 break;
 
-              case 'Selection':
+              case 'selection'
+              /*case 'Selection'*/
+              :
                 break;
 
-              case 'ProtectContents':
+              case 'protectcontents'
+              /*case 'ProtectContents'*/
+              :
                 break;
 
               default:
@@ -40408,142 +41035,236 @@ function make_xlsx_lib(XLSX) {
 
           /* PivotTable */
 
-          case 'PivotTable':
-          case 'PivotCache':
+          case 'pivottable'
+          /*case 'PivotTable'*/
+          :
+          case 'pivotcache'
+          /*case 'PivotCache'*/
+          :
             switch (Rn[3]) {
-              case 'ImmediateItemsOnDrop':
+              case 'immediateitemsondrop'
+              /*case 'ImmediateItemsOnDrop'*/
+              :
                 break;
 
-              case 'ShowPageMultipleItemLabel':
+              case 'showpagemultipleitemlabel'
+              /*case 'ShowPageMultipleItemLabel'*/
+              :
                 break;
 
-              case 'CompactRowIndent':
+              case 'compactrowindent'
+              /*case 'CompactRowIndent'*/
+              :
                 break;
 
-              case 'Location':
+              case 'location'
+              /*case 'Location'*/
+              :
                 break;
 
-              case 'PivotField':
+              case 'pivotfield'
+              /*case 'PivotField'*/
+              :
                 break;
 
-              case 'Orientation':
+              case 'orientation'
+              /*case 'Orientation'*/
+              :
                 break;
 
-              case 'LayoutForm':
+              case 'layoutform'
+              /*case 'LayoutForm'*/
+              :
                 break;
 
-              case 'LayoutSubtotalLocation':
+              case 'layoutsubtotallocation'
+              /*case 'LayoutSubtotalLocation'*/
+              :
                 break;
 
-              case 'LayoutCompactRow':
+              case 'layoutcompactrow'
+              /*case 'LayoutCompactRow'*/
+              :
                 break;
 
-              case 'Position':
+              case 'position'
+              /*case 'Position'*/
+              :
                 break;
 
-              case 'PivotItem':
+              case 'pivotitem'
+              /*case 'PivotItem'*/
+              :
                 break;
 
-              case 'DataType':
+              case 'datatype'
+              /*case 'DataType'*/
+              :
                 break;
 
-              case 'DataField':
+              case 'datafield'
+              /*case 'DataField'*/
+              :
                 break;
 
-              case 'SourceName':
+              case 'sourcename'
+              /*case 'SourceName'*/
+              :
                 break;
 
-              case 'ParentField':
+              case 'parentfield'
+              /*case 'ParentField'*/
+              :
                 break;
 
-              case 'PTLineItems':
+              case 'ptlineitems'
+              /*case 'PTLineItems'*/
+              :
                 break;
 
-              case 'PTLineItem':
+              case 'ptlineitem'
+              /*case 'PTLineItem'*/
+              :
                 break;
 
-              case 'CountOfSameItems':
+              case 'countofsameitems'
+              /*case 'CountOfSameItems'*/
+              :
                 break;
 
-              case 'Item':
+              case 'item'
+              /*case 'Item'*/
+              :
                 break;
 
-              case 'ItemType':
+              case 'itemtype'
+              /*case 'ItemType'*/
+              :
                 break;
 
-              case 'PTSource':
+              case 'ptsource'
+              /*case 'PTSource'*/
+              :
                 break;
 
-              case 'CacheIndex':
+              case 'cacheindex'
+              /*case 'CacheIndex'*/
+              :
                 break;
 
-              case 'ConsolidationReference':
+              case 'consolidationreference'
+              /*case 'ConsolidationReference'*/
+              :
                 break;
 
-              case 'FileName':
+              case 'filename'
+              /*case 'FileName'*/
+              :
                 break;
 
-              case 'Reference':
+              case 'reference'
+              /*case 'Reference'*/
+              :
                 break;
 
-              case 'NoColumnGrand':
+              case 'nocolumngrand'
+              /*case 'NoColumnGrand'*/
+              :
                 break;
 
-              case 'NoRowGrand':
+              case 'norowgrand'
+              /*case 'NoRowGrand'*/
+              :
                 break;
 
-              case 'BlankLineAfterItems':
+              case 'blanklineafteritems'
+              /*case 'BlankLineAfterItems'*/
+              :
                 break;
 
-              case 'Hidden':
+              case 'hidden'
+              /*case 'Hidden'*/
+              :
                 break;
 
-              case 'Subtotal':
+              case 'subtotal'
+              /*case 'Subtotal'*/
+              :
                 break;
 
-              case 'BaseField':
+              case 'basefield'
+              /*case 'BaseField'*/
+              :
                 break;
 
-              case 'MapChildItems':
+              case 'mapchilditems'
+              /*case 'MapChildItems'*/
+              :
                 break;
 
-              case 'Function':
+              case 'function'
+              /*case 'Function'*/
+              :
                 break;
 
-              case 'RefreshOnFileOpen':
+              case 'refreshonfileopen'
+              /*case 'RefreshOnFileOpen'*/
+              :
                 break;
 
-              case 'PrintSetTitles':
+              case 'printsettitles'
+              /*case 'PrintSetTitles'*/
+              :
                 break;
 
-              case 'MergeLabels':
+              case 'mergelabels'
+              /*case 'MergeLabels'*/
+              :
                 break;
 
-              case 'DefaultVersion':
+              case 'defaultversion'
+              /*case 'DefaultVersion'*/
+              :
                 break;
 
-              case 'RefreshName':
+              case 'refreshname'
+              /*case 'RefreshName'*/
+              :
                 break;
 
-              case 'RefreshDate':
+              case 'refreshdate'
+              /*case 'RefreshDate'*/
+              :
                 break;
 
-              case 'RefreshDateCopy':
+              case 'refreshdatecopy'
+              /*case 'RefreshDateCopy'*/
+              :
                 break;
 
-              case 'VersionLastRefresh':
+              case 'versionlastrefresh'
+              /*case 'VersionLastRefresh'*/
+              :
                 break;
 
-              case 'VersionLastUpdate':
+              case 'versionlastupdate'
+              /*case 'VersionLastUpdate'*/
+              :
                 break;
 
-              case 'VersionUpdateableMin':
+              case 'versionupdateablemin'
+              /*case 'VersionUpdateableMin'*/
+              :
                 break;
 
-              case 'VersionRefreshableMin':
+              case 'versionrefreshablemin'
+              /*case 'VersionRefreshableMin'*/
+              :
                 break;
 
-              case 'Calculation':
+              case 'calculation'
+              /*case 'Calculation'*/
+              :
                 break;
 
               default:
@@ -40554,27 +41275,43 @@ function make_xlsx_lib(XLSX) {
 
           /* PageBreaks */
 
-          case 'PageBreaks':
+          case 'pagebreaks'
+          /*case 'PageBreaks'*/
+          :
             switch (Rn[3]) {
-              case 'ColBreaks':
+              case 'colbreaks'
+              /*case 'ColBreaks'*/
+              :
                 break;
 
-              case 'ColBreak':
+              case 'colbreak'
+              /*case 'ColBreak'*/
+              :
                 break;
 
-              case 'RowBreaks':
+              case 'rowbreaks'
+              /*case 'RowBreaks'*/
+              :
                 break;
 
-              case 'RowBreak':
+              case 'rowbreak'
+              /*case 'RowBreak'*/
+              :
                 break;
 
-              case 'ColStart':
+              case 'colstart'
+              /*case 'ColStart'*/
+              :
                 break;
 
-              case 'ColEnd':
+              case 'colend'
+              /*case 'ColEnd'*/
+              :
                 break;
 
-              case 'RowEnd':
+              case 'rowend'
+              /*case 'RowEnd'*/
+              :
                 break;
 
               default:
@@ -40585,18 +41322,28 @@ function make_xlsx_lib(XLSX) {
 
           /* AutoFilter */
 
-          case 'AutoFilter':
+          case 'autofilter'
+          /*case 'AutoFilter'*/
+          :
             switch (Rn[3]) {
-              case 'AutoFilterColumn':
+              case 'autofiltercolumn'
+              /*case 'AutoFilterColumn'*/
+              :
                 break;
 
-              case 'AutoFilterCondition':
+              case 'autofiltercondition'
+              /*case 'AutoFilterCondition'*/
+              :
                 break;
 
-              case 'AutoFilterAnd':
+              case 'autofilterand'
+              /*case 'AutoFilterAnd'*/
+              :
                 break;
 
-              case 'AutoFilterOr':
+              case 'autofilteror'
+              /*case 'AutoFilterOr'*/
+              :
                 break;
 
               default:
@@ -40607,99 +41354,163 @@ function make_xlsx_lib(XLSX) {
 
           /* QueryTable */
 
-          case 'QueryTable':
+          case 'querytable'
+          /*case 'QueryTable'*/
+          :
             switch (Rn[3]) {
-              case 'Id':
+              case 'id'
+              /*case 'Id'*/
+              :
                 break;
 
-              case 'AutoFormatFont':
+              case 'autoformatfont'
+              /*case 'AutoFormatFont'*/
+              :
                 break;
 
-              case 'AutoFormatPattern':
+              case 'autoformatpattern'
+              /*case 'AutoFormatPattern'*/
+              :
                 break;
 
-              case 'QuerySource':
+              case 'querysource'
+              /*case 'QuerySource'*/
+              :
                 break;
 
-              case 'QueryType':
+              case 'querytype'
+              /*case 'QueryType'*/
+              :
                 break;
 
-              case 'EnableRedirections':
+              case 'enableredirections'
+              /*case 'EnableRedirections'*/
+              :
                 break;
 
-              case 'RefreshedInXl9':
+              case 'refreshedinxl9'
+              /*case 'RefreshedInXl9'*/
+              :
                 break;
 
-              case 'URLString':
+              case 'urlstring'
+              /*case 'URLString'*/
+              :
                 break;
 
-              case 'HTMLTables':
+              case 'htmltables'
+              /*case 'HTMLTables'*/
+              :
                 break;
 
-              case 'Connection':
+              case 'connection'
+              /*case 'Connection'*/
+              :
                 break;
 
-              case 'CommandText':
+              case 'commandtext'
+              /*case 'CommandText'*/
+              :
                 break;
 
-              case 'RefreshInfo':
+              case 'refreshinfo'
+              /*case 'RefreshInfo'*/
+              :
                 break;
 
-              case 'NoTitles':
+              case 'notitles'
+              /*case 'NoTitles'*/
+              :
                 break;
 
-              case 'NextId':
+              case 'nextid'
+              /*case 'NextId'*/
+              :
                 break;
 
-              case 'ColumnInfo':
+              case 'columninfo'
+              /*case 'ColumnInfo'*/
+              :
                 break;
 
-              case 'OverwriteCells':
+              case 'overwritecells'
+              /*case 'OverwriteCells'*/
+              :
                 break;
 
-              case 'DoNotPromptForFile':
+              case 'donotpromptforfile'
+              /*case 'DoNotPromptForFile'*/
+              :
                 break;
 
-              case 'TextWizardSettings':
+              case 'textwizardsettings'
+              /*case 'TextWizardSettings'*/
+              :
                 break;
 
-              case 'Source':
+              case 'source'
+              /*case 'Source'*/
+              :
                 break;
 
-              case 'Number':
+              case 'number'
+              /*case 'Number'*/
+              :
                 break;
 
-              case 'Decimal':
+              case 'decimal'
+              /*case 'Decimal'*/
+              :
                 break;
 
-              case 'ThousandSeparator':
+              case 'thousandseparator'
+              /*case 'ThousandSeparator'*/
+              :
                 break;
 
-              case 'TrailingMinusNumbers':
+              case 'trailingminusnumbers'
+              /*case 'TrailingMinusNumbers'*/
+              :
                 break;
 
-              case 'FormatSettings':
+              case 'formatsettings'
+              /*case 'FormatSettings'*/
+              :
                 break;
 
-              case 'FieldType':
+              case 'fieldtype'
+              /*case 'FieldType'*/
+              :
                 break;
 
-              case 'Delimiters':
+              case 'delimiters'
+              /*case 'Delimiters'*/
+              :
                 break;
 
-              case 'Tab':
+              case 'tab'
+              /*case 'Tab'*/
+              :
                 break;
 
-              case 'Comma':
+              case 'comma'
+              /*case 'Comma'*/
+              :
                 break;
 
-              case 'AutoFormatName':
+              case 'autoformatname'
+              /*case 'AutoFormatName'*/
+              :
                 break;
 
-              case 'VersionLastEdit':
+              case 'versionlastedit'
+              /*case 'VersionLastEdit'*/
+              :
                 break;
 
-              case 'VersionLastRefresh':
+              case 'versionlastrefresh'
+              /*case 'VersionLastRefresh'*/
+              :
                 break;
 
               default:
@@ -40708,75 +41519,123 @@ function make_xlsx_lib(XLSX) {
 
             break;
 
-          case 'DataValidation':
+          case 'datavalidation'
+          /*case 'DataValidation'*/
+          :
             switch (Rn[3]) {
-              case 'Range':
+              case 'range'
+              /*case 'Range'*/
+              :
                 break;
 
-              case 'Type':
+              case 'type'
+              /*case 'Type'*/
+              :
                 break;
 
-              case 'Min':
+              case 'min'
+              /*case 'Min'*/
+              :
                 break;
 
-              case 'Max':
+              case 'max'
+              /*case 'Max'*/
+              :
                 break;
 
-              case 'Sort':
+              case 'sort'
+              /*case 'Sort'*/
+              :
                 break;
 
-              case 'Descending':
+              case 'descending'
+              /*case 'Descending'*/
+              :
                 break;
 
-              case 'Order':
+              case 'order'
+              /*case 'Order'*/
+              :
                 break;
 
-              case 'CaseSensitive':
+              case 'casesensitive'
+              /*case 'CaseSensitive'*/
+              :
                 break;
 
-              case 'Value':
+              case 'value'
+              /*case 'Value'*/
+              :
                 break;
 
-              case 'ErrorStyle':
+              case 'errorstyle'
+              /*case 'ErrorStyle'*/
+              :
                 break;
 
-              case 'ErrorMessage':
+              case 'errormessage'
+              /*case 'ErrorMessage'*/
+              :
                 break;
 
-              case 'ErrorTitle':
+              case 'errortitle'
+              /*case 'ErrorTitle'*/
+              :
                 break;
 
-              case 'InputMessage':
+              case 'inputmessage'
+              /*case 'InputMessage'*/
+              :
                 break;
 
-              case 'InputTitle':
+              case 'inputtitle'
+              /*case 'InputTitle'*/
+              :
                 break;
 
-              case 'ComboHide':
+              case 'combohide'
+              /*case 'ComboHide'*/
+              :
                 break;
 
-              case 'InputHide':
+              case 'inputhide'
+              /*case 'InputHide'*/
+              :
                 break;
 
-              case 'Condition':
+              case 'condition'
+              /*case 'Condition'*/
+              :
                 break;
 
-              case 'Qualifier':
+              case 'qualifier'
+              /*case 'Qualifier'*/
+              :
                 break;
 
-              case 'UseBlank':
+              case 'useblank'
+              /*case 'UseBlank'*/
+              :
                 break;
 
-              case 'Value1':
+              case 'value1'
+              /*case 'Value1'*/
+              :
                 break;
 
-              case 'Value2':
+              case 'value2'
+              /*case 'Value2'*/
+              :
                 break;
 
-              case 'Format':
+              case 'format'
+              /*case 'Format'*/
+              :
                 break;
 
-              case 'CellRangeList':
+              case 'cellrangelist'
+              /*case 'CellRangeList'*/
+              :
                 break;
 
               default:
@@ -40785,76 +41644,126 @@ function make_xlsx_lib(XLSX) {
 
             break;
 
-          case 'Sorting':
-          case 'ConditionalFormatting':
+          case 'sorting'
+          /*case 'Sorting'*/
+          :
+          case 'conditionalformatting'
+          /*case 'ConditionalFormatting'*/
+          :
             switch (Rn[3]) {
-              case 'Range':
+              case 'range'
+              /*case 'Range'*/
+              :
                 break;
 
-              case 'Type':
+              case 'type'
+              /*case 'Type'*/
+              :
                 break;
 
-              case 'Min':
+              case 'min'
+              /*case 'Min'*/
+              :
                 break;
 
-              case 'Max':
+              case 'max'
+              /*case 'Max'*/
+              :
                 break;
 
-              case 'Sort':
+              case 'sort'
+              /*case 'Sort'*/
+              :
                 break;
 
-              case 'Descending':
+              case 'descending'
+              /*case 'Descending'*/
+              :
                 break;
 
-              case 'Order':
+              case 'order'
+              /*case 'Order'*/
+              :
                 break;
 
-              case 'CaseSensitive':
+              case 'casesensitive'
+              /*case 'CaseSensitive'*/
+              :
                 break;
 
-              case 'Value':
+              case 'value'
+              /*case 'Value'*/
+              :
                 break;
 
-              case 'ErrorStyle':
+              case 'errorstyle'
+              /*case 'ErrorStyle'*/
+              :
                 break;
 
-              case 'ErrorMessage':
+              case 'errormessage'
+              /*case 'ErrorMessage'*/
+              :
                 break;
 
-              case 'ErrorTitle':
+              case 'errortitle'
+              /*case 'ErrorTitle'*/
+              :
                 break;
 
-              case 'CellRangeList':
+              case 'cellrangelist'
+              /*case 'CellRangeList'*/
+              :
                 break;
 
-              case 'InputMessage':
+              case 'inputmessage'
+              /*case 'InputMessage'*/
+              :
                 break;
 
-              case 'InputTitle':
+              case 'inputtitle'
+              /*case 'InputTitle'*/
+              :
                 break;
 
-              case 'ComboHide':
+              case 'combohide'
+              /*case 'ComboHide'*/
+              :
                 break;
 
-              case 'InputHide':
+              case 'inputhide'
+              /*case 'InputHide'*/
+              :
                 break;
 
-              case 'Condition':
+              case 'condition'
+              /*case 'Condition'*/
+              :
                 break;
 
-              case 'Qualifier':
+              case 'qualifier'
+              /*case 'Qualifier'*/
+              :
                 break;
 
-              case 'UseBlank':
+              case 'useblank'
+              /*case 'UseBlank'*/
+              :
                 break;
 
-              case 'Value1':
+              case 'value1'
+              /*case 'Value1'*/
+              :
                 break;
 
-              case 'Value2':
+              case 'value2'
+              /*case 'Value2'*/
+              :
                 break;
 
-              case 'Format':
+              case 'format'
+              /*case 'Format'*/
+              :
                 break;
 
               default:
@@ -40865,52 +41774,94 @@ function make_xlsx_lib(XLSX) {
 
           /* MapInfo (schema) */
 
-          case 'MapInfo':
-          case 'Schema':
-          case 'data':
+          case 'mapinfo'
+          /*case 'MapInfo'*/
+          :
+          case 'schema'
+          /*case 'Schema'*/
+          :
+          case 'data'
+          /*case 'data'*/
+          :
             switch (Rn[3]) {
-              case 'Map':
+              case 'map'
+              /*case 'Map'*/
+              :
                 break;
 
-              case 'Entry':
+              case 'entry'
+              /*case 'Entry'*/
+              :
                 break;
 
-              case 'Range':
+              case 'range'
+              /*case 'Range'*/
+              :
                 break;
 
-              case 'XPath':
+              case 'xpath'
+              /*case 'XPath'*/
+              :
                 break;
 
-              case 'Field':
+              case 'field'
+              /*case 'Field'*/
+              :
                 break;
 
-              case 'XSDType':
+              case 'xsdtype'
+              /*case 'XSDType'*/
+              :
                 break;
 
-              case 'FilterOn':
+              case 'filteron'
+              /*case 'FilterOn'*/
+              :
                 break;
 
-              case 'Aggregate':
+              case 'aggregate'
+              /*case 'Aggregate'*/
+              :
                 break;
 
-              case 'ElementType':
+              case 'elementtype'
+              /*case 'ElementType'*/
+              :
                 break;
 
-              case 'AttributeType':
+              case 'attributetype'
+              /*case 'AttributeType'*/
+              :
                 break;
 
               /* These are from xsd (XML Schema Definition) */
 
-              case 'schema':
-              case 'element':
-              case 'complexType':
-              case 'datatype':
-              case 'all':
-              case 'attribute':
-              case 'extends':
+              case 'schema'
+              /*case 'schema'*/
+              :
+              case 'element'
+              /*case 'element'*/
+              :
+              case 'complextype'
+              /*case 'complexType'*/
+              :
+              case 'datatype'
+              /*case 'datatype'*/
+              :
+              case 'all'
+              /*case 'all'*/
+              :
+              case 'attribute'
+              /*case 'attribute'*/
+              :
+              case 'extends'
+              /*case 'extends'*/
+              :
                 break;
 
-              case 'row':
+              case 'row'
+              /*case 'row'*/
+              :
                 break;
 
               default:
@@ -40921,7 +41872,9 @@ function make_xlsx_lib(XLSX) {
 
           /* SmartTags (can be anything) */
 
-          case 'SmartTags':
+          case 'smarttags'
+          /*case 'SmartTags'*/
+          :
             break;
 
           default:
@@ -40935,8 +41888,10 @@ function make_xlsx_lib(XLSX) {
         if (Rn[3].match(/!\[CDATA/)) break;
         if (!state[state.length - 1][1]) throw 'Unrecognized tag: ' + Rn[3] + "|" + state.join("|");
 
-        if (state[state.length - 1][0] === 'CustomDocumentProperties') {
-          if (Rn[0].slice(-2) === "/>") break;else if (Rn[1] === "/") xlml_set_custprop(Custprops, Rn[3], cp, str.slice(pidx, Rn.index));else {
+        if (state[state.length - 1][0] ===
+        /*'CustomDocumentProperties'*/
+        'customdocumentproperties') {
+          if (Rn[0].slice(-2) === "/>") break;else if (Rn[1] === "/") xlml_set_custprop(Custprops, raw_Rn3, cp, str.slice(pidx, Rn.index));else {
             cp = Rn;
             pidx = Rn.index + Rn[0].length;
           }
@@ -47299,29 +48254,45 @@ function make_xlsx_lib(XLSX) {
     o.write_shift(2, t);
     o.write_shift(2, len);
     if (len > 0 && is_buf(payload)) ba.push(payload);
-  } //function write_biff_continue(ba, type, payload, length) {
-  //	var len = length || (payload||[]).length || 0;
-  //	if(len <= 8224) return write_biff_rec(ba, type, payload, len);
-  //	var t = +type || +XLSRE[type];
-  //	if(isNaN(t)) return;
-  //	var parts = payload.parts || [], sidx = 0;
-  //	var i = 0, w = 0;
-  //	while(w + (parts[sidx] || 8224) <= 8224) { w+= (parts[sidx] || 8224); sidx++; }
-  //	var o = ba.next(4);
-  //	o.write_shift(2, t);
-  //	o.write_shift(2, w);
-  //	ba.push(payload.slice(i, i + w));
-  //	i += w;
-  //	while(i < len) {
-  //		o = ba.next(4);
-  //		o.write_shift(2, 0x3c); // TODO: figure out correct continue type
-  //		w = 0;
-  //		while(w + (parts[sidx] || 8224) <= 8224) { w+= (parts[sidx] || 8224); sidx++; }
-  //		o.write_shift(2, w);
-  //		ba.push(payload.slice(i, i+w)); i+= w;
-  //	}
-  //}
+  }
 
+  function write_biff_continue(ba, type, payload, length) {
+    var len = length || (payload || []).length || 0;
+    if (len <= 8224) return write_biff_rec(ba, type, payload, len);
+    var t = +type || +XLSRE[type];
+    if (isNaN(t)) return;
+    var parts = payload.parts || [],
+        sidx = 0;
+    var i = 0,
+        w = 0;
+
+    while (w + (parts[sidx] || 8224) <= 8224) {
+      w += parts[sidx] || 8224;
+      sidx++;
+    }
+
+    var o = ba.next(4);
+    o.write_shift(2, t);
+    o.write_shift(2, w);
+    ba.push(payload.slice(i, i + w));
+    i += w;
+
+    while (i < len) {
+      o = ba.next(4);
+      o.write_shift(2, 0x3c); // TODO: figure out correct continue type
+
+      w = 0;
+
+      while (w + (parts[sidx] || 8224) <= 8224) {
+        w += parts[sidx] || 8224;
+        sidx++;
+      }
+
+      o.write_shift(2, w);
+      ba.push(payload.slice(i, i + w));
+      i += w;
+    }
+  }
 
   function write_BIFF2Cell(out, r, c) {
     if (!out) out = new_buf(7);
@@ -47527,7 +48498,11 @@ function make_xlsx_lib(XLSX) {
 
       case 's':
       case 'str':
-        write_biff_rec(ba, "Label", write_Label(R, C, cell.v, os, opts));
+        if (opts.bookSST) {
+          var isst = get_sst_id(opts.Strings, cell.v, opts.revStrings);
+          write_biff_rec(ba, "LabelSst", write_LabelSst(R, C, isst, os, opts));
+        } else write_biff_rec(ba, "Label", write_Label(R, C, cell.v, os, opts));
+
         break;
 
       default:
@@ -47698,6 +48673,7 @@ function make_xlsx_lib(XLSX) {
 
     /* BIFF8: [SST *Continue] ExtSST */
 
+    if (b8 && opts.Strings) write_biff_continue(C, "SST", write_SST(opts.Strings, opts));
     /* *WebPub [WOpt] [CrErr] [BookExt] *FeatHdr *DConn [THEME] [CompressPictures] [Compat12] [GUIDTypeLib] */
 
     write_biff_rec(C, "EOF");
@@ -47966,6 +48942,12 @@ function make_xlsx_lib(XLSX) {
         sp.t = cell && cell.t || 'z';
         if (o.editable) w = '<span contenteditable="true">' + w + '</span>';
         sp.id = (o.id || "sjs") + "-" + coord;
+
+        if (sp.t != "z") {
+          sp.v = cell.v;
+          if (cell.z != null) sp.z = cell.z;
+        }
+
         oo.push(writextag('td', w, sp));
       }
 
@@ -48009,31 +48991,54 @@ function make_xlsx_lib(XLSX) {
     };
   }();
 
-  function parse_dom_table(table, _opts) {
+  function sheet_add_dom(ws, table, _opts) {
     var opts = _opts || {};
     if (DENSE != null) opts.dense = DENSE;
-    var ws = opts.dense ? [] : {};
+    var or_R = 0,
+        or_C = 0;
+
+    if (opts.origin != null) {
+      if (typeof opts.origin == 'number') or_R = opts.origin;else {
+        var _origin = typeof opts.origin == "string" ? decode_cell(opts.origin) : opts.origin;
+
+        or_R = _origin.r;
+        or_C = _origin.c;
+      }
+    }
+
     var rows = table.getElementsByTagName('tr');
-    var sheetRows = opts.sheetRows || 10000000;
+    var sheetRows = Math.min(opts.sheetRows || 10000000, rows.length);
     var range = {
       s: {
         r: 0,
         c: 0
       },
       e: {
-        r: 0,
-        c: 0
+        r: or_R,
+        c: or_C
       }
     };
+
+    if (ws["!ref"]) {
+      var _range = decode_range(ws["!ref"]);
+
+      range.s.r = Math.min(range.s.r, _range.s.r);
+      range.s.c = Math.min(range.s.c, _range.s.c);
+      range.e.r = Math.max(range.e.r, _range.e.r);
+      range.e.c = Math.max(range.e.c, _range.e.c);
+      if (or_R == -1) range.e.r = or_R = _range.e.r + 1;
+    }
+
     var merges = [],
         midx = 0;
-    var rowinfo = [];
+    var rowinfo = ws["!rows"] || (ws["!rows"] = []);
     var _R = 0,
         R = 0,
         _C = 0,
         C = 0,
         RS = 0,
         CS = 0;
+    if (!ws["!cols"]) ws['!cols'] = [];
 
     for (; _R < rows.length && R < sheetRows; ++_R) {
       var row = rows[_R];
@@ -48050,13 +49055,14 @@ function make_xlsx_lib(XLSX) {
       for (_C = C = 0; _C < elts.length; ++_C) {
         var elt = elts[_C];
         if (opts.display && is_dom_element_hidden(elt)) continue;
-        var v = htmldecode(elt.innerHTML);
+        var v = elt.hasAttribute('v') ? elt.getAttribute('v') : htmldecode(elt.innerHTML);
+        var z = elt.getAttribute('z');
 
         for (midx = 0; midx < merges.length; ++midx) {
           var m = merges[midx];
 
-          if (m.s.c == C && m.s.r <= R && R <= m.e.r) {
-            C = m.e.c + 1;
+          if (m.s.c == C + or_C && m.s.r < R + or_R && R + or_R <= m.e.r) {
+            C = m.e.c + 1 - or_C;
             midx = -1;
           }
         }
@@ -48064,14 +49070,14 @@ function make_xlsx_lib(XLSX) {
 
 
         CS = +elt.getAttribute("colspan") || 1;
-        if ((RS = +elt.getAttribute("rowspan")) > 0 || CS > 1) merges.push({
+        if ((RS = +elt.getAttribute("rowspan") || 1) > 1 || CS > 1) merges.push({
           s: {
-            r: R,
-            c: C
+            r: R + or_R,
+            c: C + or_C
           },
           e: {
-            r: R + (RS || 1) - 1,
-            c: C + CS - 1
+            r: R + or_R + (RS || 1) - 1,
+            c: C + or_C + (CS || 1) - 1
           }
         });
         var o = {
@@ -48104,28 +49110,35 @@ function make_xlsx_lib(XLSX) {
           }
         }
 
+        if (o.z === undefined && z != null) o.z = z;
+
         if (opts.dense) {
-          if (!ws[R]) ws[R] = [];
-          ws[R][C] = o;
+          if (!ws[R + or_R]) ws[R + or_R] = [];
+          ws[R + or_R][C + or_C] = o;
         } else ws[encode_cell({
-          c: C,
-          r: R
+          c: C + or_C,
+          r: R + or_R
         })] = o;
 
-        if (range.e.c < C) range.e.c = C;
+        if (range.e.c < C + or_C) range.e.c = C + or_C;
         C += CS;
       }
 
       ++R;
     }
 
-    if (merges.length) ws['!merges'] = merges;
-    if (rowinfo.length) ws['!rows'] = rowinfo;
-    range.e.r = R - 1;
+    if (merges.length) ws['!merges'] = (ws["!merges"] || []).concat(merges);
+    range.e.r = Math.max(range.e.r, R - 1 + or_R);
     ws['!ref'] = encode_range(range);
-    if (R >= sheetRows) ws['!fullref'] = encode_range((range.e.r = rows.length - _R + R - 1, range)); // We can count the real number of rows to parse but we don't to improve the performance
+    if (R >= sheetRows) ws['!fullref'] = encode_range((range.e.r = rows.length - _R + R - 1 + or_R, range)); // We can count the real number of rows to parse but we don't to improve the performance
 
     return ws;
+  }
+
+  function parse_dom_table(table, _opts) {
+    var opts = _opts || {};
+    var ws = opts.dense ? [] : {};
+    return sheet_add_dom(ws, table, _opts);
   }
 
   function table_to_book(table, opts) {
@@ -49361,7 +50374,7 @@ function make_xlsx_lib(XLSX) {
 
             case 's':
             case 'str':
-              textp = cell.v;
+              textp = cell.v == null ? "" : cell.v;
               ct['office:value-type'] = "string";
               break;
 
@@ -50073,10 +51086,10 @@ function make_xlsx_lib(XLSX) {
 
     switch ((o || {}).type || "base64") {
       case 'buffer':
-        return [f[0], f[1], f[2], f[3]];
+        return [f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]];
 
       case 'base64':
-        x = Base64.decode(f.slice(0, 24));
+        x = Base64.decode(f.slice(0, 12));
         break;
 
       case 'binary':
@@ -50084,13 +51097,13 @@ function make_xlsx_lib(XLSX) {
         break;
 
       case 'array':
-        return [f[0], f[1], f[2], f[3]];
+        return [f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7]];
 
       default:
         throw new Error("Unrecognized type " + (o && o.type || "undefined"));
     }
 
-    return [x.charCodeAt(0), x.charCodeAt(1), x.charCodeAt(2), x.charCodeAt(3)];
+    return [x.charCodeAt(0), x.charCodeAt(1), x.charCodeAt(2), x.charCodeAt(3), x.charCodeAt(4), x.charCodeAt(5), x.charCodeAt(6), x.charCodeAt(7)];
   }
 
   function read_cfb(cfb, opts) {
@@ -50221,7 +51234,8 @@ function make_xlsx_lib(XLSX) {
 
     switch ((n = firstbyte(d, o))[0]) {
       case 0xD0:
-        return read_cfb(CFB.read(d, o), o);
+        if (n[1] === 0xCF && n[2] === 0x11 && n[3] === 0xE0 && n[4] === 0xA1 && n[5] === 0xB1 && n[6] === 0x1A && n[7] === 0xE1) return read_cfb(CFB.read(d, o), o);
+        break;
 
       case 0x09:
         if (n[1] <= 0x04) return parse_xlscfb(d, o);
@@ -50271,7 +51285,7 @@ function make_xlsx_lib(XLSX) {
         return read_plaintext_raw(d, o);
     }
 
-    if (n[2] <= 12 && n[3] <= 31) return DBF.to_workbook(d, o);
+    if (DBF.versions.indexOf(n[0]) > -1 && n[2] <= 12 && n[3] <= 31) return DBF.to_workbook(d, o);
     return read_prn(data, d, o, str);
   }
 
@@ -50616,7 +51630,7 @@ function make_xlsx_lib(XLSX) {
         if (v == null) {
           if (defval !== undefined) row[hdr[C]] = defval;else if (raw && v === null) row[hdr[C]] = null;else continue;
         } else {
-          row[hdr[C]] = raw ? v : format_cell(val, v, o);
+          row[hdr[C]] = raw || o.rawNumbers && val.t == "n" ? v : format_cell(val, v, o);
         }
 
         if (v != null) isempty = false;
@@ -50732,9 +51746,9 @@ function make_xlsx_lib(XLSX) {
       var val = o.dense ? (sheet[R] || [])[C] : sheet[cols[C] + rr];
       if (val == null) txt = "";else if (val.v != null) {
         isempty = false;
-        txt = '' + format_cell(val, null, o);
+        txt = '' + (o.rawNumbers && val.t == "n" ? val.v : format_cell(val, null, o));
 
-        for (var i = 0, cc = 0; i !== txt.length; ++i) if ((cc = txt.charCodeAt(i)) === fs || cc === rs || cc === 34) {
+        for (var i = 0, cc = 0; i !== txt.length; ++i) if ((cc = txt.charCodeAt(i)) === fs || cc === rs || cc === 34 || o.forceQuotes) {
           txt = "\"" + txt.replace(qreg, '""') + "\"";
           break;
         }
@@ -50834,6 +51848,7 @@ function make_xlsx_lib(XLSX) {
   }
 
   function sheet_add_json(_ws, js, opts) {
+    if (!js.length) return _ws;
     var o = opts || {};
     var offset = +!o.skipHeader;
     var ws = _ws || {};
@@ -50868,8 +51883,13 @@ function make_xlsx_lib(XLSX) {
       range.e.r = Math.max(range.e.r, _range.e.r);
 
       if (_R == -1) {
-        _R = range.e.r + 1;
+        _R = _range.e.r + 1;
         range.e.r = _R + js.length - 1 + offset;
+      }
+    } else {
+      if (_R == -1) {
+        _R = 0;
+        range.e.r = js.length - 1 + offset;
       }
     }
 
@@ -50947,6 +51967,7 @@ function make_xlsx_lib(XLSX) {
     make_formulae: sheet_to_formulae,
     sheet_add_aoa: sheet_add_aoa,
     sheet_add_json: sheet_add_json,
+    sheet_add_dom: sheet_add_dom,
     aoa_to_sheet: aoa_to_sheet,
     json_to_sheet: json_to_sheet,
     table_to_sheet: parse_dom_table,
@@ -51335,7 +52356,7 @@ function make_xlsx_lib(XLSX) {
 /*global define */
 
 
-if (typeof exports !== 'undefined') make_xlsx_lib(exports);else if (typeof module !== 'undefined' && module.exports) make_xlsx_lib(module.exports);else if (typeof define === 'function' && define.amd) define('xlsx', function () {
+if (typeof exports !== 'undefined') make_xlsx_lib(exports);else if (typeof module !== 'undefined' && module.exports) make_xlsx_lib(module.exports);else if (typeof define === 'function' && define.amd) define(function () {
   if (!XLSX.version) make_xlsx_lib(XLSX);
   return XLSX;
 });else make_xlsx_lib(XLSX);
@@ -51371,7 +52392,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "36827" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62553" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -51547,5 +52568,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","../node_modules/xlsx/xlsx.js"], null)
+},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js"], null)
 //# sourceMappingURL=/xlsx.eefde1f8.js.map
