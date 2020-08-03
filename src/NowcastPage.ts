@@ -44,6 +44,7 @@ class NowcastPage {
 
 	///////////////////// Private Interface...not to be used by consumer
 	initPage(): void {
+		//am4core.options.queue = true   //Creates charts one-by-one
 		// Themes begin
 		am4core.useTheme(am4themes_animated)
 		// Themes end
@@ -68,7 +69,14 @@ class NowcastPage {
 		this.dclass = new DataClass(jsdata)
 
 		//Fake pie slice data for testing piechart and linechart
-		let fakeData = this.dclass.agesForPiechart
+		let fakeData = [
+			{ ageRange: "children", value: 98681 },
+			{ ageRange: "millennials", value: 200000 },
+			{ ageRange: "Gen Z", value: 309963 },
+			{ ageRange: "Baby Boomer", value: 400000 },
+			{ ageRange: "Adults", value: 549963 }
+		]
+		fakeData = this.dclass.agesForPiechart
 		//let pieChartData = dm.getAgeData(jsdata, 100);
 		let pieChartData = fakeData
 		let selectedAges: Set<string> = new Set()

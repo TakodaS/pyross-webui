@@ -3,7 +3,9 @@ import * as am4maps from "@amcharts/amcharts4/maps"
 
 //local imports
 import { lineChartWidget } from "./lineChartWidget"
-import { ukmapdatamod } from "./ukCountiesHighModMinified.js" //This is actually a default export which can be named anything
+//import { ukmapdatamod } from "./ukCountiesHighModMinified.js" //This is actually a default export which can be named anything
+//import { ukmapdatamod } from "./groupLADMapComplete.js"
+import { ukmapdatamod } from "./data/groupMap2FieldsMin.js"
 
 //var selectedCounties = new Set();
 //The following alias is needed as the context of "this" within the event handlers is "undefined"!
@@ -22,6 +24,7 @@ class mapOfUKWidget {
 	private smallTemplate: any
 	private _hitFlag: boolean = false
 	private _lineChartWidget: lineChartWidget | any
+	button: any
 
 	constructor() {
 		this._selectedCounties = new Set()
@@ -29,7 +32,7 @@ class mapOfUKWidget {
 		this.initLargeMap()
 		this.initSmallMap()
 		this.setEvents()
-		//this.addControlButtons();
+		this.addControlButtons();
 	}
 
 	//////////////////////////////Public Interface////////////////////////////////////////
@@ -70,10 +73,10 @@ class mapOfUKWidget {
 		this._mapChart = am4core.create("mapchart", am4maps.MapChart)
 		//this.mapChart.width = am4core.percent(50);
 		//this.mapChart.height = am4core.percent(100);
-		this._mapChart.seriesContainer.draggable = false
-		this._mapChart.seriesContainer.resizable = false
+		//this._mapChart.seriesContainer.draggable = false
+		//this._mapChart.seriesContainer.resizable = false
 		this._mapChart.zoomLevel = 1
-		this._mapChart.maxZoomLevel = 1
+		//this._mapChart.maxZoomLevel = 1
 		this._mapChart.logo.dom.outerHTML = ""
 
 		// Set map data
@@ -84,7 +87,7 @@ class mapOfUKWidget {
 		//THE FOLLOWING DOES NOT WORK EVEN THOUGH AMCHARTS HAS AN EXAMPLE USING IT!!!!!
 		//this._mapChart.geodataSource.url = "./ukCountiesHighMod.json";
 
-		//console.log("mapchart", this._mapChart);
+		console.log("mapchart", this._mapChart);
 		// Set projection
 		this._mapChart.projection = new am4maps.projections.Miller()
 
@@ -97,15 +100,14 @@ class mapOfUKWidget {
 		this.polygonSeries.useGeodata = true
 
 		// Exclude Ireland
-		this.polygonSeries.exclude = ["IE", "GB-NIR"]
+		//this.polygonSeries.exclude = ["IE", "GB-NIR"]
 		// Make map load polygon (like country names) data from GeoJSON
-		this.polygonSeries.useGeodata = true
 		//polygonSeries.zoom = 0.4;
 
 		//Make more space for scaling
-		// this._mapChart.scale = 1.13;
-		this._mapChart.x = am4core.percent(-10)
-		// this._mapChart.y = am4core.percent(-15);
+		this._mapChart.scale = 1.13;
+		this._mapChart.x = am4core.percent(-26)
+		this._mapChart.y = am4core.percent(-12)
 
 		////////// COLORS
 		this.inactiveColor = am4core.color("#A3C1AD") //Cambidge Blue!
@@ -179,7 +181,7 @@ class mapOfUKWidget {
 		this._mapChart.smallMap.y = am4core.percent(45)
 		//this._mapChart.smallMap.moveHtmlContainer("smallukmap");
 
-		//this._mapChart.smallMap.zIndex = -1000;
+		//this._mapChart.smallMap.zIndex = -10;
 		//this._mapChart.smallMap.rectangle.fill = am4core.color("#f00", 0);
 		//this._mapChart.smallMap.rectangle.fillOpacity = 0;
 		this._mapChart.smallMap.background.fill = am4core.color("#f00", 0)
@@ -353,23 +355,41 @@ class mapOfUKWidget {
 	//     }
 	// }
 
-	// addControlButtons() {
-	//     // Add zoom control
-	//     this._mapChart.zoomControl = new am4maps.ZoomControl();
-	//     this._mapChart.zoomControl.scale = 1;
+	addControlButtons() {
+	    // Add zoom control
+	    this._mapChart.zoomControl = new am4maps.ZoomControl();
+		this._mapChart.zoomControl.scale = 1
+		this._mapChart.zoomControl.isMeasured = false;
+		this._mapChart.zoomControl.padding(5, 5, 5, 5)
+		//this._mapChart.zoomControl.align = "right"
+		//this._mapChart.zoomControl.valign = "middle"
+		this._mapChart.zoomControl.x = am4core.percent(85)
+		this._mapChart.zoomControl.y = am4core.percent(83)
+	
 
-	//     // Add button
-	//     button = this._mapChart.chartContainer.createChild(am4core.Button);
-	//     button.padding(5, 5, 5, 5);
-	//     button.align = "right";
-	//     button.marginRight = 15;
-	//     button.icon = new am4core.Sprite();
-	//     button.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
-	// }
+	    // Add button
+	    this.button = this._mapChart.chartContainer.createChild(am4core.Button);
+		//this.button.padding(5, 5, 5, 5);
+		this.button.isMeasured = false
+		//this._mapChart.zoomControl.align = "right"
+		//this._mapChart.zoomControl.valign = "middle"
+		this.button.x = am4core.percent(84)
+		this.button.y = am4core.percent(92)
+		// this.button.align = "right"
+		// this.button.valign = "bottom"
+		//this.button.marginR = 15;
+		//this.button.moveTo(50, 50);
+	    this.button.icon = new am4core.Sprite();
+		this.button.icon.path = "M16,8 L14,8 L14,16 L10,16 L10,10 L6,10 L6,16 L2,16 L2,8 L0,8 L8,0 L16,8 Z M16,8";
+		this.button.zIndex = 100
+		this.button.scale = 1.2
+		
+		this.button.events.on("hit", function () {
+			holdClassThisContext._mapChart.goHome()
+		})
+	}
 
-	// button.events.on("hit", function() {
-	//     holdClassThisContext._mapChart.goHome();
-	// });
+	
 } //end class mapOfUKWidget
 
 // Export

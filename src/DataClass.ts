@@ -29,6 +29,7 @@ class DataClass {
 		//request.send(null)
 		//this._data = JSON.parse(JSON.stringify(request.responseText));
 		this._indict = data;
+		console.log(this._indict);
 		this._data = this._indict.data;
 		this._ages = this._indict.ages;
 		this._classes = this._indict.classes;
@@ -53,10 +54,6 @@ class DataClass {
 
 	public get selectedAges() {
 		return Array.from(this._selectedAges);
-	}
-
-	public get classes() {
-		return this._classes;
 	}
 
 	public set selectedAges(ages: List<any>) {
@@ -153,11 +150,8 @@ class DataClass {
 	private function combineData(): void {
 		let jqdat = jsonQ(this._filteredData);
 		let cDat;
-		let outDict = {'t': jqdat.find('t').value().reduce(
-			(r, a) => r))};
-
-		//	let tDat = jqdat.find("t").value()[0];
-		//	let tDalet outDict = {"t": tDat};
+		let tDat = jqdat.find("t").value()[0];
+		let outDict = {"t": tDat};
 		//console.log(tDat);
 		for (let cls of this._classes) {
 			cDat = jqdat.find(cls).value().reduce(
@@ -170,27 +164,17 @@ class DataClass {
 	private function convertData() {
 	/*converts data to useable format by am4charts*/
 		let cm = this._combinedData;
-		let dataForChart = [];
+		var dataForChart = [];
 		let dataPoint;
-		let tScaled;
-		if ('t' in cm){
-			for (let i = 0; i < cm['t'].length; i++) {
-				dataPoint = {};
-				for (let key in cm) {
-					dataPoint[key] = cm[key][i];
-					if (key === 't'){
-						dataPoint[key] *=10;
-					}
-				}
-
-				//tScaled = cm['t'][i];
-				//dataPoint['t']=tScaled;
-				dataForChart.push(dataPoint);
-
-			}
+		for (let i = 0; i < cm['t'].length; i++) {
+			dataPoint = {"t": cm['t'][i]};
+		for (let key in cm) {
+			dataPoint[key] = cm[key][i];
 		}
-			this._formattedData = dataForChart;
+			dataForChart.push(dataPoint);
+   
 	}
+		this._formattedData = dataForChart;
 }
 // Export
 export { DataClass };
